@@ -67,6 +67,7 @@
                 evt.preventDefault();
                 // alert(JSON.stringify(this.form));
                 // this.$store.dispatch('send-message', this.form);
+                this.$store.dispatch('receive-message', this.form);
             },
             arrayBufferToBase64 (buffer) {
                 if (!buffer) return;

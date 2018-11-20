@@ -2,6 +2,7 @@
     <div>
         <h1>Send</h1>
 
+        <h2>From: {{ registrationId }}{{ deviceId }}</h2>
         <div v-if="registrationId">
             <b-form @submit="onSubmit" v-if="show" inline>
                 <b-form-input id="registrationId"
@@ -67,7 +68,7 @@
         },
         computed: {
             ...mapState([
-                'registrationId', 'store', 'server', 'messages'
+                'registrationId', 'deviceId', 'store', 'server', 'messages'
             ]),
 
         },

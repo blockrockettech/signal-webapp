@@ -122,6 +122,44 @@ export default new Vuex.Store({
                 console.error(ex);
             }
         },
+        async ['receive-message'] ({commit, dispatch, state, rootState}, form) {
+            console.log(`Receiving from ${form.registrationId}${form.deviceId}`);
+
+            const ciphertext = state.messages[`${form.registrationId}${form.deviceId}`];
+            console.log(ciphertext);
+
+
+            let fromAddress = new ls.SignalProtocolAddress(form.registrationId, form.deviceId);
+            let sessionCipher = new ls.SessionCipher(state.store, fromAddress);
+
+            const plaintext = await sessionCipher.decryptPreKeyWhisperMessage(ciphertext.body, 'binary')
+
+            console.log(plaintext);
+            let decryptedMessage = window.util.toString(plaintext);
+            console.log(decryptedMessage);
+
+            //
+            // // Instantiate a SessionBuilder for a remote recipientId + deviceId tuple.
+            // const sessionBuilder = new ls.SessionBuilder(state.store, address);
+            //
+            // try {
+            //     const recipientKeys = state.server[ `${form.registrationId}${form.deviceId}`];
+            //     console.log(recipientKeys);
+            //
+            //     await sessionBuilder.processPreKey(recipientKeys);
+            //
+            //     console.log(`pre key processed`);
+            //
+            //     const sessionCipher = new ls.SessionCipher(state.store, address);
+            //     const ciphertext = await sessionCipher.encrypt(form.message);
+            //
+            //     console.log(ciphertext);
+            //     commit('commit-message', {registrationId: form.registrationId, deviceId: form.deviceId, ciphertext: ciphertext});
+            //
+            // } catch (ex) {
+            //     console.error(ex);
+            // }
+        },
     },
     getters: {}
 });
