@@ -88,6 +88,8 @@ export default new Vuex.Store({
                 preKey: preKey,
                 signedPreKey: signedPreKey
             });
+
+            dispatch('send-keys-to-server', this.form);
         },
         async ['send-keys-to-server'] ({commit, dispatch, state, rootState}, form) {
             console.log(`Sending keys`);

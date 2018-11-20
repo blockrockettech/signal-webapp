@@ -4,6 +4,7 @@ import Home from './views/Home';
 import About from './views/About';
 import Register from './views/Register';
 import Send from './views/Send';
+import Receive from './views/Receive';
 
 Vue.use(Router);
 
@@ -30,6 +31,11 @@ export default new Router({
             path: '/send',
             name: 'send',
             component: Send
+        },
+        {
+            path: '/receive',
+            name: 'receive',
+            component: Receive
         }
     ]
 });

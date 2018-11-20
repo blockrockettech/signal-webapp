@@ -14,6 +14,8 @@
                 &bull;
                 <router-link to="/send" class="p-3">Send</router-link>
                 &bull;
+                <router-link to="/receive" class="p-3">Receive</router-link>
+                &bull;
                 <router-link to="/about" class="p-3">About</router-link>
             </div>
         </footer>

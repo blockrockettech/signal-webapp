@@ -12,7 +12,7 @@
                               placeholder="Device ID">
                 </b-form-input>
 
-                <b-button type="submit" variant="primary">Submit</b-button>
+                <b-button type="submit" variant="primary">Register</b-button>
             </b-form>
         </div>
         <!--<div v-else>-->
@@ -86,7 +86,6 @@
                 evt.preventDefault();
                 // alert(JSON.stringify(this.form));
                 this.$store.dispatch('generate-registration-id', this.form);
-                this.$store.dispatch('send-keys-to-server', this.form);
             },
             arrayBufferToBase64 (buffer) {
                 if (!buffer) return;

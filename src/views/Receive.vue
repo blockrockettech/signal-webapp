@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h1>Send</h1>
+        <h1>Receive</h1>
 
         <div v-if="registrationId">
             <b-form @submit="onSubmit" v-if="show" inline>
@@ -20,15 +20,7 @@
                               placeholder="deviceId">
                 </b-form-input>
 
-                <b-form-input id="message"
-                              type="text"
-                              v-model="form.message"
-                              required
-                              class="mb-2 mr-sm-2 mb-sm-0"
-                              placeholder="Message">
-                </b-form-input>
-
-                <b-button type="submit" variant="primary">Send</b-button>
+                <b-button type="submit" variant="primary">Receive</b-button>
             </b-form>
         </div>
         <div v-else>
@@ -53,14 +45,13 @@
     import { mapGetters, mapState } from 'vuex';
 
     export default {
-        name: 'send',
+        name: 'receive',
         components: {},
         data () {
             return {
                 form: {
                     deviceId: '',
-                    registrationId: '',
-                    message: ''
+                    registrationId: ''
                 },
                 show: true
             };
@@ -75,7 +66,7 @@
             onSubmit (evt) {
                 evt.preventDefault();
                 // alert(JSON.stringify(this.form));
-                this.$store.dispatch('send-message', this.form);
+                // this.$store.dispatch('send-message', this.form);
             },
             arrayBufferToBase64 (buffer) {
                 if (!buffer) return;
