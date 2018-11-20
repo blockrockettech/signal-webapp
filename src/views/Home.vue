@@ -1,5 +1,5 @@
 <template>
-  <div class="home">
+  <div class="home text-center">
     <HelloWorld msg="Welcome to ODIN Messenger"/>
   </div>
 </template>
