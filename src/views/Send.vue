@@ -2,23 +2,16 @@
     <div>
         <h1>Send</h1>
 
-        <h2>From: {{ registrationId }}{{ deviceId }}</h2>
+        <h2>From: {{ registrationId }}|{{ deviceId }}</h2>
         <div v-if="registrationId">
             <b-form @submit="onSubmit" v-if="show" inline>
-                <b-form-input id="registrationId"
-                              type="text"
-                              v-model="form.registrationId"
-                              required
-                              class="mb-2 mr-sm-2 mb-sm-0"
-                              placeholder="registrationId">
-                </b-form-input>
 
-                <b-form-input id="deviceId"
+                <b-form-input id="id"
                               type="text"
-                              v-model="form.deviceId"
+                              v-model="form.id"
                               required
                               class="mb-2 mr-sm-2 mb-sm-0"
-                              placeholder="deviceId">
+                              placeholder="id">
                 </b-form-input>
 
                 <b-form-input id="message"
@@ -59,8 +52,7 @@
         data () {
             return {
                 form: {
-                    deviceId: '',
-                    registrationId: '',
+                    id: '',
                     message: ''
                 },
                 show: true

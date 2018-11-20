@@ -57,12 +57,12 @@ export default new Vuex.Store({
 
             console.log(reqObj);
 
-            Vue.set(state.server, `${state.registrationId}${state.deviceId}`, reqObj);
+            Vue.set(state.server, `${state.registrationId}|${state.deviceId}`, reqObj);
         },
-        ['commit-message'] (state, {registrationId, deviceId, ciphertext}) {
-            console.log(`incoming message for ${registrationId}${deviceId}: ${ciphertext}`);
+        ['commit-message'] (state, {id, ciphertext}) {
+            console.log(`incoming message for ${id}: ${ciphertext}`);
 
-            Vue.set(state.messages, `${registrationId}${deviceId}`, ciphertext);
+            Vue.set(state.messages, `${id}`, ciphertext);
         },
     },
     actions: {
@@ -97,15 +97,17 @@ export default new Vuex.Store({
             commit('commit-local-keys');
         },
         async ['send-message'] ({commit, dispatch, state, rootState}, form) {
-            console.log(`Sending "${form.message}" to ${form.registrationId}${form.deviceId}`);
+            const [registrationId, deviceId] = form.id.split('|');
 
-            const address = new ls.SignalProtocolAddress(form.registrationId, form.deviceId);
+            console.log(`Sending "${form.message}" to ${registrationId}|${deviceId}`);
+
+            const address = new ls.SignalProtocolAddress(registrationId, deviceId);
 
             // Instantiate a SessionBuilder for a remote recipientId + deviceId tuple.
             const sessionBuilder = new ls.SessionBuilder(state.store, address);
 
             try {
-                const recipientKeys = state.server[ `${form.registrationId}${form.deviceId}`];
+                const recipientKeys = state.server[form.id];
                 console.log(recipientKeys);
 
                 await sessionBuilder.processPreKey(recipientKeys);
@@ -116,7 +118,7 @@ export default new Vuex.Store({
                 const ciphertext = await sessionCipher.encrypt(form.message);
 
                 console.log(ciphertext);
-                commit('commit-message', {registrationId: form.registrationId, deviceId: form.deviceId, ciphertext: ciphertext});
+                commit('commit-message', {id: form.id, ciphertext: ciphertext});
 
             } catch (ex) {
                 console.error(ex);
@@ -130,6 +132,8 @@ export default new Vuex.Store({
 
 
             let fromAddress = new ls.SignalProtocolAddress(form.registrationId, form.deviceId);
+
+            // wrong store...
             let sessionCipher = new ls.SessionCipher(state.store, fromAddress);
 
             const plaintext = await sessionCipher.decryptPreKeyWhisperMessage(ciphertext.body, 'binary')
