@@ -1,5 +1,6 @@
 <template>
   <div class="about">
-    <h1>This is an about page</h1>
+    <h1>Signal Odin</h1>
+    <p>"Hello World" to prove <code>Signal</code> encryption</p>
   </div>
 </template>
