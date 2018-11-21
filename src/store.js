@@ -95,7 +95,8 @@ export default new Vuex.Store({
         // needs to be a SignalProtocolStore impl
         // used to build sessions and handle messages
         // holds pre-keys for other users
-        store: null
+        store: null,
+        messages: [],
     },
     mutations: {
         ['commit-account-registration'] (state, {deviceId, registrationId, identityKeyPair, preKey, signedPreKey}) {
@@ -124,6 +125,9 @@ export default new Vuex.Store({
 
             // needs to be in SignalProtocolStore
             state.store.storeSignedPreKey(signedPreKey.keyId, signedPreKey.keyPair);
+        },
+        ['commit-message'] (state, messageObj) {
+            Vue.set(state, 'messages', state.messages.concat(messageObj));
         }
     },
     actions: {
@@ -256,6 +260,11 @@ export default new Vuex.Store({
                 let decryptedMessage = util.toString(plaintext);
 
                 console.log(decryptedMessage);
+
+                commit('commit-message', {
+                    messageFrom: form.id,
+                    message: decryptedMessage
+                });
             } catch (ex) {
                 console.error(ex);
             }
