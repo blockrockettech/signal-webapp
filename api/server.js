@@ -135,7 +135,6 @@ function sendKeys (req, res) {
 
         responseObject = JSON.parse(JSON.stringify(storageMap[storageKey]));
         // responseObject.preKey = responseObject.preKeys[responseObject.preKeys.length - 1];
-
         // storageMap[storageKey].pop(); // TODO is this needed or can we use the same pre-key?
 
     } else {
@@ -150,12 +149,9 @@ function sendKeys (req, res) {
 function storeIncomingMessage (req, res) {
     let reqObj = req.body;
     let messageStorageKey = `${reqObj.messageTo.toString()}-${reqObj.messageFrom.toString()}`;
-    // if (messageStorageMap[messageStorageKey]) {
-    //     res.json({err: 'Can only deal with one message'});
-    // } else {
-        messageStorageMap[messageStorageKey] = reqObj;
-        res.json({msg: 'Message successfully saved'});
-    // }
+    //FIXME stack the messages as only saves the last one...
+    messageStorageMap[messageStorageKey] = reqObj;
+    res.json({msg: 'Message successfully saved'});
     console.log('\n');
     console.log('~~~~~~~messageStorageMap~~~~~~~');
     console.log(messageStorageMap);

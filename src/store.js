@@ -132,7 +132,10 @@ export default new Vuex.Store({
             Vue.set(state, 'messages', state.messages.concat(messageObj));
         },
         ['commit-sent-message'] (state, messageObj) {
-            Vue.set(state, 'sent', state.sent.concat(messageObj));
+            let stringifyObj = messageObj;
+            stringifyObj.ciphertextMessage = JSON.stringify(messageObj.ciphertextMessage);
+
+            Vue.set(state, 'sent', state.sent.concat(stringifyObj));
         },
         ['commit-friend'] (state, friend) {
             Vue.set(state, 'friends', state.friends.concat(friend));

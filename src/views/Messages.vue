@@ -2,7 +2,7 @@
     <div>
         <h1>Messages</h1>
 
-        <h2><span class="badge badge-warning">From:</span> {{ registrationId }}|{{ deviceId }}</h2>
+        <h2><span class="badge badge-warning">ID:</span> {{ registrationId }}|{{ deviceId }}</h2>
 
         <div v-if="registrationId">
             <b-form @submit="onSend" v-if="show" inline>
@@ -39,12 +39,17 @@
             <b-alert variant="danger" show class="text-center">Not registered!</b-alert>
         </div>
 
+        <h3>Received</h3>
+        <div class="row">
+            <div v-if="messages && messages.length > 0" class="col">
+                <b-table striped hover :items="messages"></b-table>
+            </div>
+        </div>
+
+        <h3>Sent</h3>
         <div class="row">
             <div v-if="sent && sent.length > 0" class="col">
-                <b-alert variant="info" show class="text-center">{{ sent }}</b-alert>
-            </div>
-            <div v-if="messages && messages.length > 0" class="col">
-                <b-alert variant="success" show class="text-center">{{ messages }}</b-alert>
+                <b-table striped hover :items="sent"></b-table>
             </div>
         </div>
     </div>

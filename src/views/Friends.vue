@@ -20,8 +20,13 @@
             <b-alert variant="danger" show class="text-center">Not registered!</b-alert>
         </div>
 
-        <div v-if="friends && friends.length > 0">
-            <b-alert variant="success" show class="text-center">{{ friends }}</b-alert>
+        <h3>Friends</h3>
+        <div class="row">
+            <div v-if="friends && friends.length > 0" class="col">
+                <ul>
+                    <li v-for="friend in friends" v-bind:key="friend">{{ friend }}</li>
+                </ul>
+            </div>
         </div>
     </div>
 </template>
