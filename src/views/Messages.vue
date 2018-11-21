@@ -1,11 +1,11 @@
 <template>
     <div>
-        <h1>Send</h1>
+        <h1>Messages</h1>
 
         <h2><span class="badge badge-warning">From:</span> {{ registrationId }}|{{ deviceId }}</h2>
 
         <div v-if="registrationId">
-            <b-form @submit="onSubmit" v-if="show" inline>
+            <b-form @submit="onSend" v-if="show" inline>
 
                 <b-form-select id="id" required v-model="form.id" :options="friends" class="mb-2 mr-sm-2 mb-sm-0"></b-form-select>
 
@@ -19,18 +19,26 @@
 
                 <b-button type="submit" variant="primary">Send</b-button>
             </b-form>
+
+            <b-form @submit="onReceive" v-if="show" inline>
+
+                <b-form-select id="id" required v-model="form.id" :options="friends" class="mb-2 mr-sm-2 mb-sm-0"></b-form-select>
+
+                <b-button type="submit" variant="primary">Receive</b-button>
+            </b-form>
         </div>
         <div v-else>
             <b-alert variant="danger" show class="text-center">Not registered!</b-alert>
         </div>
 
-        <div v-if="sent && sent.length > 0">
-            <b-alert variant="success" show class="text-center">{{ sent }}</b-alert>
+        <div class="row">
+            <div v-if="sent && sent.length > 0" class="col">
+                <b-alert variant="info" show class="text-center">{{ sent }}</b-alert>
+            </div>
+            <div v-if="messages && messages.length > 0" class="col">
+                <b-alert variant="success" show class="text-center">{{ messages }}</b-alert>
+            </div>
         </div>
-
-        <!--<hr/>-->
-        <!--<span class="text-muted small mr-4">Signal Store</span><br/>-->
-        <!--<code>{{ store }}</code>-->
     </div>
 </template>
 
@@ -51,15 +59,20 @@
         },
         computed: {
             ...mapState([
-                'registrationId', 'deviceId', 'store', 'sent', 'friends'
+                'registrationId', 'deviceId', 'store', 'sent', 'messages', 'friends'
             ]),
 
         },
         methods: {
-            onSubmit (evt) {
+            onSend (evt) {
                 evt.preventDefault();
                 // alert(JSON.stringify(this.form));
                 this.$store.dispatch('send-message', this.form);
+            },
+            onReceive (evt) {
+                evt.preventDefault();
+                // alert(JSON.stringify(this.form));
+                this.$store.dispatch('receive-message', this.form)
             }
         }
     };

@@ -256,7 +256,7 @@ export default new Vuex.Store({
         },
         async ['receive-message'] ({commit, dispatch, state, rootState}, form) {
             try {
-                console.log(`Receiving from ${state.registrationId}|${state.deviceId}`);
+                console.log(`Receiving from ${form.id}`);
 
                 let requestObject = {
                     messageTo: `${state.registrationId}|${state.deviceId}`,
@@ -272,11 +272,17 @@ export default new Vuex.Store({
 
                 let sessionCipher = new ls.SessionCipher(state.store, fromAddress);
 
-                const plaintext = await sessionCipher.decryptPreKeyWhisperMessage(encryptedMessage.ciphertextMessage.body, 'binary');
-                // const plaintext = await sessionCipher.decryptWhisperMessage(encryptedMessage.ciphertextMessage.body);
+                let plaintext;
+                if (encryptedMessage.ciphertextMessage.type === 3) {
+                    console.log(`TYPE 3`);
+                    plaintext = await sessionCipher.decryptPreKeyWhisperMessage(encryptedMessage.ciphertextMessage.body, 'binary');
+                }
+                else if (encryptedMessage.ciphertextMessage.type === 1) {
+                    console.log(`TYPE 1`);
+                    plaintext = await sessionCipher.decryptWhisperMessage(encryptedMessage.ciphertextMessage.body, 'binary');
+                }
 
                 console.log(plaintext);
-
                 let decryptedMessage = util.toString(plaintext);
 
                 console.log(decryptedMessage);

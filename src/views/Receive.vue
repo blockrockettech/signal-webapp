@@ -18,10 +18,6 @@
         <div v-if="messages && messages.length > 0">
             <b-alert variant="success" show class="text-center">{{ messages }}</b-alert>
         </div>
-
-        <!--<hr/>-->
-        <!--<span class="text-muted small mr-4">Signal Store</span><br/>-->
-        <!--<code>{{ store }}</code>-->
     </div>
 </template>
 
@@ -50,17 +46,6 @@
                 evt.preventDefault();
                 // alert(JSON.stringify(this.form));
                 this.$store.dispatch('receive-message', this.form)
-            },
-            arrayBufferToBase64 (buffer) {
-                if (!buffer) return;
-
-                let binary = '';
-                let bytes = new Uint8Array(buffer);
-                let len = bytes.byteLength;
-                for (let i = 0; i < len; i++) {
-                    binary += String.fromCharCode(bytes[i]);
-                }
-                return window.btoa(binary);
             }
         }
     };
