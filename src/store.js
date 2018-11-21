@@ -276,6 +276,8 @@ export default new Vuex.Store({
                 if (encryptedMessage.ciphertextMessage.type === 3) {
                     console.log(`TYPE 3`);
                     plaintext = await sessionCipher.decryptPreKeyWhisperMessage(encryptedMessage.ciphertextMessage.body, 'binary');
+
+                    commit('commit-friend', form.id);
                 }
                 else if (encryptedMessage.ciphertextMessage.type === 1) {
                     console.log(`TYPE 1`);

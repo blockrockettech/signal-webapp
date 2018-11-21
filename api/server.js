@@ -150,12 +150,12 @@ function sendKeys (req, res) {
 function storeIncomingMessage (req, res) {
     let reqObj = req.body;
     let messageStorageKey = `${reqObj.messageTo.toString()}-${reqObj.messageFrom.toString()}`;
-    if (messageStorageMap[messageStorageKey]) {
-        res.json({err: 'Can only deal with one message'});
-    } else {
+    // if (messageStorageMap[messageStorageKey]) {
+    //     res.json({err: 'Can only deal with one message'});
+    // } else {
         messageStorageMap[messageStorageKey] = reqObj;
         res.json({msg: 'Message successfully saved'});
-    }
+    // }
     console.log('\n');
     console.log('~~~~~~~messageStorageMap~~~~~~~');
     console.log(messageStorageMap);
