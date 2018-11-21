@@ -3,6 +3,7 @@
         <h1>Send</h1>
 
         <h2>From: {{ registrationId }}|{{ deviceId }}</h2>
+
         <div v-if="registrationId">
             <b-form @submit="onSubmit" v-if="show" inline>
 
