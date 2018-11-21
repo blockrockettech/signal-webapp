@@ -149,7 +149,7 @@ function sendKeys (req, res) {
 
 function storeIncomingMessage (req, res) {
     let reqObj = req.body;
-    let messageStorageKey = reqObj.messageTo.registrationId.toString() + reqObj.messageTo.deviceId.toString() + reqObj.messageFrom.registrationId.toString() + reqObj.messageFrom.deviceId.toString();
+    let messageStorageKey = `${reqObj.messageTo.toString()}-${reqObj.messageFrom.toString()}`;
     if (messageStorageMap[messageStorageKey]) {
         res.json({err: 'Can only deal with one message'});
     } else {
@@ -163,22 +163,18 @@ function storeIncomingMessage (req, res) {
 
 function forwardMessageToClient (req, res) {
     let reqObj = req.body;
-    let messageStorageKey = reqObj.messageTo.registrationId.toString() + reqObj.messageTo.deviceId.toString() + reqObj.messageFromUniqueId;
+    let messageStorageKey = `${reqObj.messageTo.toString()}-${reqObj.messageFrom.toString()}`;
     let responseObject;
     if (messageStorageMap[messageStorageKey]) {
-        if (storageMap[reqObj.messageFromUniqueId]) {
-            responseObject = messageStorageMap[messageStorageKey];
-            responseObject.messageFrom = {
-                registrationId: storageMap[reqObj.messageFromUniqueId].registrationId,
-                deviceId: storageMap[reqObj.messageFromUniqueId].deviceId
-            };
-        } else {
-            {
-                err: 'Client: ' + reqObj.messageFromUniqueId + ' is not registered on this server.';
-            }
-        }
+
+        responseObject = messageStorageMap[messageStorageKey];
+        // responseObject.messageFrom = {
+        //     registrationId: storageMap[reqObj.messageFromUniqueId].registrationId,
+        //     deviceId: storageMap[reqObj.messageFromUniqueId].deviceId
+        // };
+
     } else {
-        responseObject = {err: 'Message from: ' + reqObj.messageFromUniqueId + ' to: ' + reqObj.messageTo.registrationId.toString() + reqObj.messageTo.deviceId.toString() + ' does not exist'};
+        responseObject = {err: `MSG ERROR: ${reqObj.messageTo.toString()}-${reqObj.messageFrom.toString()}`};
     }
     res.json(responseObject);
 }

@@ -164,7 +164,7 @@ export default new Vuex.Store({
                 keys.signedPreKey.signature = base64ToArrayBuffer(keys.signedPreKey.signature);
 
                 keys.preKey.publicKey  = base64ToArrayBuffer(keys.preKey.publicKey);
-                
+
                 console.log(keys);
 
                 // add recipient to session
@@ -177,7 +177,16 @@ export default new Vuex.Store({
                 const ciphertext = await sessionCipher.encrypt(form.message);
 
                 console.log(ciphertext);
-                commit('commit-message', {id: form.id, ciphertext: ciphertext});
+
+                let msgObj = {
+                    messageTo: form.id,
+                    messageFrom: `${state.registrationId}|${state.deviceId}`,
+                    ciphertextMessage: ciphertext,
+                };
+
+                // commit('commit-message', {id: form.id, ciphertext: ciphertext});
+
+                return api.post(`/send/message`, msgObj).then((res) => console.log(`sent message cipher`, res));
 
             } catch (ex) {
                 console.error(ex);
