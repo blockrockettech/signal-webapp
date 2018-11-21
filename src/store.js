@@ -1,9 +1,9 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import axios from 'axios';
-import {InMemorySignalProtocolStore} from './InMemorySignalProtocolStore';
+import { InMemorySignalProtocolStore } from './InMemorySignalProtocolStore';
 
-import _ from 'lowdash';
+/* global dcodeIO */
 
 Vue.use(Vuex);
 
@@ -11,46 +11,46 @@ Vue.use(Vuex);
 const ls = window.libsignal;
 const KeyHelper = ls.KeyHelper;
 
-const API_URL = "http://localhost:3000";
+const API_URL = 'http://localhost:3000';
 
 const api = axios.create({
     baseURL: `${API_URL}/api/`,
 });
 
-const arrayBufferToBase64 = (buffer) =>{
+const arrayBufferToBase64 = (buffer) => {
     let binary = '';
     let bytes = new Uint8Array(buffer);
     let len = bytes.byteLength;
     for (let i = 0; i < len; i++) {
-        binary += String.fromCharCode( bytes[ i ] );
+        binary += String.fromCharCode(bytes[i]);
     }
     return window.btoa(binary);
 };
 
 const base64ToArrayBuffer = (base64) => {
-    let binary_string =  window.atob(base64);
+    let binary_string = window.atob(base64);
     let len = binary_string.length;
     let bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++)        {
+    for (let i = 0; i < len; i++) {
         bytes[i] = binary_string.charCodeAt(i);
     }
     return bytes.buffer;
 };
 
 // Util import from src/helpers.js
-var util = (function() {
+const util = (function () {
     'use strict';
 
-    var StaticArrayBufferProto = new ArrayBuffer().__proto__;
+    let StaticArrayBufferProto = new ArrayBuffer().__proto__;
 
     return {
-        toString: function(thing) {
+        toString: function (thing) {
             if (typeof thing == 'string') {
                 return thing;
             }
             return new dcodeIO.ByteBuffer.wrap(thing).toString('binary');
         },
-        toArrayBuffer: function(thing) {
+        toArrayBuffer: function (thing) {
             if (thing === undefined) {
                 return undefined;
             }
@@ -60,24 +60,23 @@ var util = (function() {
                 }
             }
 
-            var str;
-            if (typeof thing == "string") {
+            let str;
+            if (typeof thing == 'string') {
                 str = thing;
             } else {
-                throw new Error("Tried to convert a non-string of type " + typeof thing + " to an array buffer");
+                throw new Error('Tried to convert a non-string of type ' + typeof thing + ' to an array buffer');
             }
             return new dcodeIO.ByteBuffer.wrap(thing, 'binary').toArrayBuffer();
         },
-        isEqual: function(a, b) {
-            // TODO: Special-case arraybuffers, etc
+        isEqual: function (a, b) {
             if (a === undefined || b === undefined) {
                 return false;
             }
             a = util.toString(a);
             b = util.toString(b);
-            var maxLength = Math.max(a.length, b.length);
+            let maxLength = Math.max(a.length, b.length);
             if (maxLength < 5) {
-                throw new Error("a/b compare too short");
+                throw new Error('a/b compare too short');
             }
             return a.substring(0, Math.min(maxLength, a.length)) == b.substring(0, Math.min(maxLength, b.length));
         }
@@ -96,16 +95,10 @@ export default new Vuex.Store({
         // needs to be a SignalProtocolStore impl
         // used to build sessions and handle messages
         // holds pre-keys for other users
-        store: null,
-
-        // simulating a server for storing pre-keys
-        server: {},
-
-        // message store - move to server for universal retrieval
-        messages: {},
+        store: null
     },
     mutations: {
-        ['commit-account-registration'](state, {deviceId, registrationId, identityKeyPair, preKey, signedPreKey}) {
+        ['commit-account-registration'] (state, {deviceId, registrationId, identityKeyPair, preKey, signedPreKey}) {
 
             // build a new store on each account
             // when server based this should only happen once
@@ -131,17 +124,11 @@ export default new Vuex.Store({
 
             // needs to be in SignalProtocolStore
             state.store.storeSignedPreKey(signedPreKey.keyId, signedPreKey.keyPair);
-        },
-        // FIXME send to server
-        ['commit-message'](state, {id, ciphertext}) {
-            console.log(`incoming message for ${id}: ${ciphertext}`);
-
-            Vue.set(state.messages, `${id}`, ciphertext);
-        },
+        }
     },
     actions: {
         // bootstraps a Signal device, registration, and keys
-        async ['generate-registration-id']({commit, dispatch, state, rootState}, form) {
+        async ['generate-registration-id'] ({commit, dispatch, state, rootState}, form) {
             console.log(`Generating Registration ID for ${JSON.stringify(form)}`);
 
             const registrationId = KeyHelper.generateRegistrationId();
@@ -166,34 +153,39 @@ export default new Vuex.Store({
 
             dispatch('send-keys-to-server', this.form);
         },
-        async ['send-keys-to-server']({commit, dispatch, state, rootState}, form) {
-            console.log(`Sending keys`);
-            // NOTE: No private keys go to the server - not sure type is needed?
-            let reqObj = {
-                type: 'init',
-                deviceId: state.deviceId,
-                registrationId: state.registrationId,
-                identityKey: arrayBufferToBase64(state.identityKeyPair.pubKey),
-                signedPreKey: {
-                    keyId: state.signedPreKey.keyId,
-                    publicKey: arrayBufferToBase64(state.signedPreKey.keyPair.pubKey),
-                    signature: arrayBufferToBase64(state.signedPreKey.signature)
-                },
-                preKey: {
-                    keyId: state.preKey.keyId,
-                    publicKey: arrayBufferToBase64(state.preKey.keyPair.pubKey)
-                }
-            };
-            console.log(reqObj);
-
-            return api.post(`/keys/register`, reqObj).then((res) => console.log(`registered keys`, res));
-        },
-        async ['send-message']({commit, dispatch, state, rootState}, form) {
-            const [registrationId, deviceId] = form.id.split('|');
-
-            console.log(`Sending "${form.message}" to ${registrationId}|${deviceId}`);
-
+        async ['send-keys-to-server'] ({commit, dispatch, state, rootState}, form) {
             try {
+                console.log(`Sending keys`);
+
+                // NOTE: No private keys go to the server - not sure type is needed?
+                let reqObj = {
+                    type: 'init',
+                    deviceId: state.deviceId,
+                    registrationId: state.registrationId,
+                    identityKey: arrayBufferToBase64(state.identityKeyPair.pubKey),
+                    signedPreKey: {
+                        keyId: state.signedPreKey.keyId,
+                        publicKey: arrayBufferToBase64(state.signedPreKey.keyPair.pubKey),
+                        signature: arrayBufferToBase64(state.signedPreKey.signature)
+                    },
+                    preKey: {
+                        keyId: state.preKey.keyId,
+                        publicKey: arrayBufferToBase64(state.preKey.keyPair.pubKey)
+                    }
+                };
+                console.log(reqObj);
+
+                const res = await api.post(`/keys/register`, reqObj);
+                console.log(`registered keys: ${res}`);
+            } catch (ex) {
+                console.error(ex);
+            }
+        },
+        async ['send-message'] ({commit, dispatch, state, rootState}, form) {
+            try {
+                const [registrationId, deviceId] = form.id.split('|');
+                console.log(`Sending "${form.message}" to ${registrationId}|${deviceId}`);
+
                 const address = new ls.SignalProtocolAddress(registrationId, deviceId);
 
                 // Instantiate a SessionBuilder for a remote recipientId + deviceId tuple.
@@ -206,12 +198,11 @@ export default new Vuex.Store({
 
                 let keys = preKeyResp.data;
 
+                // map array buffers to base64 strings
                 keys.identityKey = base64ToArrayBuffer(keys.identityKey);
-
                 keys.signedPreKey.publicKey = base64ToArrayBuffer(keys.signedPreKey.publicKey);
                 keys.signedPreKey.signature = base64ToArrayBuffer(keys.signedPreKey.signature);
-
-                keys.preKey.publicKey  = base64ToArrayBuffer(keys.preKey.publicKey);
+                keys.preKey.publicKey = base64ToArrayBuffer(keys.preKey.publicKey);
 
                 console.log(keys);
 
@@ -234,36 +225,40 @@ export default new Vuex.Store({
 
                 // commit('commit-message', {id: form.id, ciphertext: ciphertext});
 
-                return api.post(`/send/message`, msgObj).then((res) => console.log(`sent message cipher`, res));
-
+                const res = await api.post(`/send/message`, msgObj);
+                console.log(`sent message cipher ${res}`);
             } catch (ex) {
                 console.error(ex);
             }
         },
-        async ['receive-message']({commit, dispatch, state, rootState}, form) {
-            console.log(`Receiving from ${state.registrationId}|${state.deviceId}`);
+        async ['receive-message'] ({commit, dispatch, state, rootState}, form) {
+            try {
+                console.log(`Receiving from ${state.registrationId}|${state.deviceId}`);
 
-            let requestObject = {
-                messageTo: `${state.registrationId}|${state.deviceId}`,
-                messageFrom: `${form.id}`
-            };
-            const encryptedMessageData = await api.post(`/get/message`, requestObject);
+                let requestObject = {
+                    messageTo: `${state.registrationId}|${state.deviceId}`,
+                    messageFrom: `${form.id}`
+                };
+                const encryptedMessageData = await api.post(`/get/message`, requestObject);
 
-            const encryptedMessage = encryptedMessageData.data;
-            console.log(encryptedMessage);
+                const encryptedMessage = encryptedMessageData.data;
+                console.log(encryptedMessage);
 
-            const [registrationId, deviceId] = form.id.split('|');
-            let fromAddress = new ls.SignalProtocolAddress(registrationId, deviceId);
+                const [registrationId, deviceId] = form.id.split('|');
+                let fromAddress = new ls.SignalProtocolAddress(registrationId, deviceId);
 
-            let sessionCipher = new ls.SessionCipher(state.store, fromAddress);
+                let sessionCipher = new ls.SessionCipher(state.store, fromAddress);
 
-            const plaintext = await sessionCipher.decryptPreKeyWhisperMessage(encryptedMessage.ciphertextMessage.body, 'binary');
+                const plaintext = await sessionCipher.decryptPreKeyWhisperMessage(encryptedMessage.ciphertextMessage.body, 'binary');
 
-            console.log(plaintext);
+                console.log(plaintext);
 
-            let decryptedMessage = util.toString(plaintext);
+                let decryptedMessage = util.toString(plaintext);
 
-            console.log(decryptedMessage);
+                console.log(decryptedMessage);
+            } catch (ex) {
+                console.error(ex);
+            }
         }
     },
     getters: {}

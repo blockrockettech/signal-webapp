@@ -24,14 +24,6 @@
         <hr/>
         <span class="text-muted small mr-4">Signal Store</span><br/>
         <code>{{ store }}</code>
-
-        <hr/>
-        <span class="text-muted small mr-4">Signal Server</span><br/>
-        <code>{{ server }}</code>
-
-        <hr/>
-        <span class="text-muted small mr-4">Signal Encrypted Messages</span><br/>
-        <code>{{ messages }}</code>
     </div>
 </template>
 
@@ -51,7 +43,7 @@
         },
         computed: {
             ...mapState([
-                'registrationId', 'deviceId', 'store', 'server', 'messages'
+                'registrationId', 'deviceId', 'store'
             ]),
 
         },
