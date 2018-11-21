@@ -134,11 +134,14 @@ export default new Vuex.Store({
                 const sessionBuilder = new ls.SessionBuilder(state.store, address);
 
                 // loads recipient's pre-keys - required to build shared key for encryption
-                const recipientKeys = state.server[form.id];
-                console.log(recipientKeys);
+
+                const {preKey} = await api.post(`/keys/lookup`, {registrationId, deviceId});
+
+                // const recipientKeys = state.server[form.id];
+                console.log(preKey);
 
                 // add recipient to session
-                await sessionBuilder.processPreKey(recipientKeys);
+                await sessionBuilder.processPreKey(preKey);
 
                 console.log(`pre key processed`);
 

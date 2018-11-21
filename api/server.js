@@ -111,9 +111,10 @@ var storageMap = {};
 var messageStorageMap = {};
 
 function receiveKeys(req, res) {
-    let reqObj = req.body;
-    //console.log(req.body);
-    let storageKey = reqObj.registrationId.toString() + reqObj.deviceId.toString();
+    const reqObj = req.body;
+    const {registrationId, deviceId} = reqObj;
+    const storageKey = `${registrationId.toString()}|${deviceId.toString()}`;
+
     if (storageMap[storageKey]) {
         res.json({err: 'Init packet for this user already exists'});
     } else {
@@ -127,17 +128,21 @@ function receiveKeys(req, res) {
 }
 
 function sendKeys(req, res) {
-    let reqObj = req.body;
-    let storageKey = reqObj.registrationId.toString() + reqObj.deviceId.toString();
+    const {registrationId, deviceId} = req.body;
+    const storageKey = `${registrationId.toString()}|${deviceId.toString()}`;
+
     let responseObject;
     if (storageMap[storageKey]) {
+
         if (storageMap[storageKey].preKeys.length !== 0) {
             responseObject = JSON.parse(JSON.stringify(storageMap[storageKey]));
             responseObject.preKey = responseObject.preKeys[responseObject.preKeys.length - 1];
-            storageMap[storageKey].preKeys.pop();
+
+            storageMap[storageKey].preKeys.pop(); // TODO is this needed or can we use the same pre-key?
         } else {
             responseObject = {err: 'Out of preKeys for this user'};
         }
+
     } else {
         responseObject = {
             err: 'Keys for ' + storageKey + ' user does not exist'
