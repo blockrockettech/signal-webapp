@@ -15,6 +15,26 @@ const api = axios.create({
     baseURL: `${API_URL}/api/`,
 });
 
+const arrayBufferToBase64 = (buffer) =>{
+    let binary = '';
+    let bytes = new Uint8Array(buffer);
+    let len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode( bytes[ i ] );
+    }
+    return window.btoa(binary);
+};
+
+const base64ToArrayBuffer = (base64) => {
+    let binary_string =  window.atob(base64);
+    let len = binary_string.length;
+    let bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++)        {
+        bytes[i] = binary_string.charCodeAt(i);
+    }
+    return bytes.buffer;
+};
+
 export default new Vuex.Store({
     state: {
         // local session vars
@@ -104,21 +124,20 @@ export default new Vuex.Store({
                 type: 'init',
                 deviceId: state.deviceId,
                 registrationId: state.registrationId,
-                identityKey: state.identityKeyPair.pubKey,
+                identityKey: arrayBufferToBase64(state.identityKeyPair.pubKey),
                 signedPreKey: {
                     keyId: state.signedPreKey.keyId,
-                    publicKey: state.signedPreKey.keyPair.pubKey,
-                    signature: state.signedPreKey.signature
+                    publicKey: arrayBufferToBase64(state.signedPreKey.keyPair.pubKey),
+                    signature: arrayBufferToBase64(state.signedPreKey.signature)
                 },
                 preKey: {
                     keyId: state.preKey.keyId,
-                    publicKey: state.preKey.keyPair.pubKey
+                    publicKey: arrayBufferToBase64(state.preKey.keyPair.pubKey)
                 }
             };
             console.log(reqObj);
 
-            return api.post(`/keys/register`, reqObj)
-                .then((res) => console.log(`registered keys`, res));
+            return api.post(`/keys/register`, reqObj).then((res) => console.log(`registered keys`, res));
         },
         async ['send-message']({commit, dispatch, state, rootState}, form) {
             const [registrationId, deviceId] = form.id.split('|');
@@ -135,13 +154,21 @@ export default new Vuex.Store({
 
                 // loads recipient's pre-keys - required to build shared key for encryption
 
-                const {preKey} = await api.post(`/keys/lookup`, {registrationId, deviceId});
+                const preKeyResp = await api.post(`/keys/lookup`, {registrationId, deviceId});
 
-                // const recipientKeys = state.server[form.id];
-                console.log(preKey);
+                let keys = preKeyResp.data;
+
+                keys.identityKey = base64ToArrayBuffer(keys.identityKey);
+
+                keys.signedPreKey.publicKey = base64ToArrayBuffer(keys.signedPreKey.publicKey);
+                keys.signedPreKey.signature = base64ToArrayBuffer(keys.signedPreKey.signature);
+
+                keys.preKey.publicKey  = base64ToArrayBuffer(keys.preKey.publicKey);
+                
+                console.log(keys);
 
                 // add recipient to session
-                await sessionBuilder.processPreKey(preKey);
+                await sessionBuilder.processPreKey(keys);
 
                 console.log(`pre key processed`);
 

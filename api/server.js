@@ -86,7 +86,6 @@ messageStoreMap = {
 }
 */
 
-
 const express = require('express');
 const cors = require('cors');
 
@@ -110,7 +109,7 @@ const constants = {
 var storageMap = {};
 var messageStorageMap = {};
 
-function receiveKeys(req, res) {
+function receiveKeys (req, res) {
     const reqObj = req.body;
     const {registrationId, deviceId} = reqObj;
     const storageKey = `${registrationId.toString()}|${deviceId.toString()}`;
@@ -127,21 +126,17 @@ function receiveKeys(req, res) {
     console.log('\n');
 }
 
-function sendKeys(req, res) {
+function sendKeys (req, res) {
     const {registrationId, deviceId} = req.body;
     const storageKey = `${registrationId.toString()}|${deviceId.toString()}`;
 
     let responseObject;
     if (storageMap[storageKey]) {
 
-        if (storageMap[storageKey].preKeys.length !== 0) {
-            responseObject = JSON.parse(JSON.stringify(storageMap[storageKey]));
-            responseObject.preKey = responseObject.preKeys[responseObject.preKeys.length - 1];
+        responseObject = JSON.parse(JSON.stringify(storageMap[storageKey]));
+        // responseObject.preKey = responseObject.preKeys[responseObject.preKeys.length - 1];
 
-            storageMap[storageKey].preKeys.pop(); // TODO is this needed or can we use the same pre-key?
-        } else {
-            responseObject = {err: 'Out of preKeys for this user'};
-        }
+        // storageMap[storageKey].pop(); // TODO is this needed or can we use the same pre-key?
 
     } else {
         responseObject = {
@@ -152,7 +147,7 @@ function sendKeys(req, res) {
     res.json(responseObject);
 }
 
-function storeIncomingMessage(req, res) {
+function storeIncomingMessage (req, res) {
     let reqObj = req.body;
     let messageStorageKey = reqObj.messageTo.registrationId.toString() + reqObj.messageTo.deviceId.toString() + reqObj.messageFrom.registrationId.toString() + reqObj.messageFrom.deviceId.toString();
     if (messageStorageMap[messageStorageKey]) {
@@ -166,7 +161,7 @@ function storeIncomingMessage(req, res) {
     console.log(messageStorageMap);
 }
 
-function forwardMessageToClient(req, res) {
+function forwardMessageToClient (req, res) {
     let reqObj = req.body;
     let messageStorageKey = reqObj.messageTo.registrationId.toString() + reqObj.messageTo.deviceId.toString() + reqObj.messageFromUniqueId;
     let responseObject;

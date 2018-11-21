@@ -1,0 +1,66 @@
+@startuml
+
+actor OdnSender
+entity SenderMessengerApp
+boundary MessengerServer
+entity RecipientMessengerApp
+actor OdnRecipient
+
+alt
+group Registration
+
+OdnSender -> SenderMessengerApp: register public key
+
+SenderMessengerApp -> SenderMessengerApp: generate registration ID
+SenderMessengerApp -> SenderMessengerApp: generate pub/priv key pair
+SenderMessengerApp -> SenderMessengerApp: generate identity key
+note left: Keys required by signal protocol
+SenderMessengerApp -> SenderMessengerApp: generate pre key
+SenderMessengerApp -> SenderMessengerApp: generate signed pre key
+
+SenderMessengerApp -> MessengerServer: register keys
+
+SenderMessengerApp -> SenderMessengerApp: build local signal store
+
+end
+
+alt
+group Session
+
+SenderMessengerApp -> MessengerServer: fetch recipient keys
+MessengerServer ---> SenderMessengerApp: keys
+
+SenderMessengerApp -> SenderMessengerApp: add recipient keys to signal store
+SenderMessengerApp -> SenderMessengerApp: build session
+
+
+group Encrypt
+
+OdnSender -> SenderMessengerApp: "Hello World"
+MessengerServer ---> SenderMessengerApp: keys
+
+SenderMessengerApp -> SenderMessengerApp: build session cipher
+SenderMessengerApp -> SenderMessengerApp: encrypt message
+
+SenderMessengerApp -> MessengerServer: send encrypted message
+end
+
+end
+
+group Decrypt
+
+
+RecipientMessengerApp -> MessengerServer: Poll for message
+MessengerServer ---> RecipientMessengerApp: message
+note right: Presuming recipient is registered\n and has sender keys in store
+
+RecipientMessengerApp -> RecipientMessengerApp: build session cipher
+RecipientMessengerApp -> RecipientMessengerApp: decrypt message
+
+RecipientMessengerApp -> OdnRecipient: "Hello World"
+end
+
+
+
+
+@enduml
