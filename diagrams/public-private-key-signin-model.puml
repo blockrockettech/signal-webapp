@@ -1,0 +1,45 @@
+@startuml
+
+actor OdnSender
+entity SenderMessengerApp
+boundary MessengerServer
+
+alt
+group Registration
+
+group Public/Private Key Claiming
+    OdnSender -> SenderMessengerApp: set public key
+    note right: Wallet Public key will\nbecome your identifier
+
+    SenderMessengerApp <- SenderMessengerApp: Generate random
+
+    OdnSender -> SenderMessengerApp: Sign Msg with Private key
+    note right: Signing proves\nownership
+
+    SenderMessengerApp -> SenderMessengerApp: Validate Sig
+
+    OdnSender <- SenderMessengerApp: Passed
+    note right: Public key becomes\nyour unique ID on Signal
+end
+
+group Signal Account Handshake
+
+    OdnSender -> SenderMessengerApp: register public key
+
+    SenderMessengerApp -> SenderMessengerApp: generate registration ID
+    SenderMessengerApp -> SenderMessengerApp: generate pub/priv key pair
+    SenderMessengerApp -> SenderMessengerApp: generate identity key
+    note left: Keys required by signal protocol
+    SenderMessengerApp -> SenderMessengerApp: generate pre key
+    SenderMessengerApp -> SenderMessengerApp: generate signed pre key
+
+    SenderMessengerApp -> MessengerServer: register keys
+
+    SenderMessengerApp -> SenderMessengerApp: build local signal store
+
+end
+
+end
+
+
+@enduml
