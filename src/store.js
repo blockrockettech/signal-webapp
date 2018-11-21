@@ -97,6 +97,7 @@ export default new Vuex.Store({
         // holds pre-keys for other users
         store: null,
         messages: [],
+        sent: [],
     },
     mutations: {
         ['commit-account-registration'] (state, {deviceId, registrationId, identityKeyPair, preKey, signedPreKey}) {
@@ -128,6 +129,9 @@ export default new Vuex.Store({
         },
         ['commit-message'] (state, messageObj) {
             Vue.set(state, 'messages', state.messages.concat(messageObj));
+        },
+        ['commit-sent-message'] (state, messageObj) {
+            Vue.set(state, 'sent', state.sent.concat(messageObj));
         }
     },
     actions: {
@@ -231,6 +235,8 @@ export default new Vuex.Store({
 
                 const res = await api.post(`/send/message`, msgObj);
                 console.log(`sent message cipher ${res}`);
+
+                commit('commit-sent-message', msgObj);
             } catch (ex) {
                 console.error(ex);
             }
@@ -262,6 +268,7 @@ export default new Vuex.Store({
                 console.log(decryptedMessage);
 
                 commit('commit-message', {
+                    messageTo: `${state.registrationId}|${state.deviceId}`,
                     messageFrom: form.id,
                     message: decryptedMessage
                 });

@@ -25,9 +25,9 @@
             <b-alert variant="success" show class="text-center">{{ messages }}</b-alert>
         </div>
 
-        <hr/>
-        <span class="text-muted small mr-4">Signal Store</span><br/>
-        <code>{{ store }}</code>
+        <!--<hr/>-->
+        <!--<span class="text-muted small mr-4">Signal Store</span><br/>-->
+        <!--<code>{{ store }}</code>-->
     </div>
 </template>
 

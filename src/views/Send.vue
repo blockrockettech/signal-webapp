@@ -30,9 +30,13 @@
             <b-alert variant="danger" show class="text-center">Not registered!</b-alert>
         </div>
 
-        <hr/>
-        <span class="text-muted small mr-4">Signal Store</span><br/>
-        <code>{{ store }}</code>
+        <div v-if="sent && sent.length > 0">
+            <b-alert variant="success" show class="text-center">{{ sent }}</b-alert>
+        </div>
+
+        <!--<hr/>-->
+        <!--<span class="text-muted small mr-4">Signal Store</span><br/>-->
+        <!--<code>{{ store }}</code>-->
     </div>
 </template>
 
@@ -53,7 +57,7 @@
         },
         computed: {
             ...mapState([
-                'registrationId', 'deviceId', 'store'
+                'registrationId', 'deviceId', 'store', 'sent'
             ]),
 
         },
