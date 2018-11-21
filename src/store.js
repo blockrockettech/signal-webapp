@@ -154,21 +154,25 @@ export default new Vuex.Store({
             }
         },
         // FIXME UNTESTED
-        async ['receive-message'] ({commit, dispatch, state, rootState}, form) {
-            console.log(`Receiving from ${form.registrationId}${form.deviceId}`);
+        async ['receive-message'] ({commit, dispatch, state, rootState}) {
+            console.log(`Receiving from ${state.registrationId}${state.deviceId}`);
 
-            const ciphertext = state.messages[`${form.registrationId}${form.deviceId}`];
-            console.log(ciphertext);
+            const messages = state.messages[`${state.registrationId}|${state.deviceId}`];
+            console.log(messages);
 
-            let fromAddress = new ls.SignalProtocolAddress(form.registrationId, form.deviceId);
+            // pop one
+            const message = messages[0];
 
-            // FIXME wrong store...
+            let fromAddress = new ls.SignalProtocolAddress(message.registrationId, message.deviceId);
+
             let sessionCipher = new ls.SessionCipher(state.store, fromAddress);
 
-            const plaintext = await sessionCipher.decryptPreKeyWhisperMessage(ciphertext.body, 'binary');
+            const plaintext = await sessionCipher.decryptPreKeyWhisperMessage(message.body, 'binary');
 
             console.log(plaintext);
+
             let decryptedMessage = window.util.toString(plaintext);
+            
             console.log(decryptedMessage);
         }
     },

@@ -2,23 +2,10 @@
     <div>
         <h1>Receive</h1>
 
+        <h2><span class="badge badge-warning">To:</span> {{ registrationId }}|{{ deviceId }}</h2>
+
         <div v-if="registrationId">
             <b-form @submit="onSubmit" v-if="show" inline>
-                <b-form-input id="registrationId"
-                              type="text"
-                              v-model="form.registrationId"
-                              required
-                              class="mb-2 mr-sm-2 mb-sm-0"
-                              placeholder="registrationId">
-                </b-form-input>
-
-                <b-form-input id="deviceId"
-                              type="text"
-                              v-model="form.deviceId"
-                              required
-                              class="mb-2 mr-sm-2 mb-sm-0"
-                              placeholder="deviceId">
-                </b-form-input>
 
                 <b-button type="submit" variant="primary">Receive</b-button>
             </b-form>
@@ -58,7 +45,7 @@
         },
         computed: {
             ...mapState([
-                'registrationId', 'store', 'server', 'messages'
+                'registrationId', 'deviceId', 'store', 'server', 'messages'
             ]),
 
         },
@@ -66,7 +53,7 @@
             onSubmit (evt) {
                 evt.preventDefault();
                 // alert(JSON.stringify(this.form));
-                this.$store.dispatch('receive-message', this.form);
+                this.$store.dispatch('receive-message')
             },
             arrayBufferToBase64 (buffer) {
                 if (!buffer) return;
