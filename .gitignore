@@ -19,3 +19,6 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw*
+
+hello-libsignal-protocol-javascript.iml
+.idea
