@@ -2,6 +2,8 @@
     <div>
         <h1>Register</h1>
 
+        <h2><span class="badge badge-warning">ID:</span> {{ registrationId }}|{{ deviceId }}</h2>
+
         <div>
             <b-form @submit="onSubmit" v-if="show" inline>
                 <b-form-input id="deviceId"

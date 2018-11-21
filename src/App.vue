@@ -12,6 +12,8 @@
                 &bull;
                 <router-link to="/register" class="p-3">Register</router-link>
                 &bull;
+                <router-link to="/friends" class="p-3">Friends</router-link>
+                &bull;
                 <router-link to="/send" class="p-3">Send</router-link>
                 &bull;
                 <router-link to="/receive" class="p-3">Receive</router-link>

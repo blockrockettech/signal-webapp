@@ -6,13 +6,7 @@
 
         <div v-if="registrationId">
             <b-form @submit="onSubmit" v-if="show" inline>
-                <b-form-input id="id"
-                              type="text"
-                              v-model="form.id"
-                              required
-                              class="mb-2 mr-sm-2 mb-sm-0"
-                              placeholder="id">
-                </b-form-input>
+                <b-form-select id="id" required v-model="form.id" :options="friends" class="mb-2 mr-sm-2 mb-sm-0"></b-form-select>
 
                 <b-button type="submit" variant="primary">Receive</b-button>
             </b-form>
@@ -47,7 +41,7 @@
         },
         computed: {
             ...mapState([
-                'registrationId', 'deviceId', 'store', 'messages'
+                'registrationId', 'deviceId', 'store', 'messages', 'friends'
             ]),
 
         },

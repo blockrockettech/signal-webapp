@@ -5,6 +5,7 @@ import About from './views/About';
 import Register from './views/Register';
 import Send from './views/Send';
 import Receive from './views/Receive';
+import Friends from './views/Friends';
 
 Vue.use(Router);
 
@@ -21,6 +22,11 @@ export default new Router({
             path: '/about',
             name: 'about',
             component: About
+        },
+        {
+            path: '/friends',
+            name: 'friends',
+            component: Friends
         },
         {
             path: '/register',

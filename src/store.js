@@ -98,6 +98,7 @@ export default new Vuex.Store({
         store: null,
         messages: [],
         sent: [],
+        friends: [],
     },
     mutations: {
         ['commit-account-registration'] (state, {deviceId, registrationId, identityKeyPair, preKey, signedPreKey}) {
@@ -132,7 +133,10 @@ export default new Vuex.Store({
         },
         ['commit-sent-message'] (state, messageObj) {
             Vue.set(state, 'sent', state.sent.concat(messageObj));
-        }
+        },
+        ['commit-friend'] (state, friend) {
+            Vue.set(state, 'friends', state.friends.concat(friend));
+        },
     },
     actions: {
         // bootstraps a Signal device, registration, and keys
@@ -189,10 +193,10 @@ export default new Vuex.Store({
                 console.error(ex);
             }
         },
-        async ['send-message'] ({commit, dispatch, state, rootState}, form) {
+        async ['add-friend'] ({commit, dispatch, state, rootState}, form) {
             try {
                 const [registrationId, deviceId] = form.id.split('|');
-                console.log(`Sending "${form.message}" to ${registrationId}|${deviceId}`);
+                console.log(`Adding ${registrationId}|${deviceId}`);
 
                 const address = new ls.SignalProtocolAddress(registrationId, deviceId);
 
@@ -218,6 +222,17 @@ export default new Vuex.Store({
                 await sessionBuilder.processPreKey(keys);
 
                 console.log(`pre key processed`);
+                commit('commit-friend', form.id);
+            } catch (ex) {
+                console.error(ex);
+            }
+        },
+        async ['send-message'] ({commit, dispatch, state, rootState}, form) {
+            try {
+                const [registrationId, deviceId] = form.id.split('|');
+                console.log(`Sending "${form.message}" to ${registrationId}|${deviceId}`);
+
+                const address = new ls.SignalProtocolAddress(registrationId, deviceId);
 
                 // encrypt
                 const sessionCipher = new ls.SessionCipher(state.store, address);
@@ -231,10 +246,8 @@ export default new Vuex.Store({
                     ciphertextMessage: ciphertext,
                 };
 
-                // commit('commit-message', {id: form.id, ciphertext: ciphertext});
-
                 const res = await api.post(`/send/message`, msgObj);
-                console.log(`sent message cipher ${res}`);
+                console.log(`sent message cipher`, res);
 
                 commit('commit-sent-message', msgObj);
             } catch (ex) {
@@ -260,6 +273,7 @@ export default new Vuex.Store({
                 let sessionCipher = new ls.SessionCipher(state.store, fromAddress);
 
                 const plaintext = await sessionCipher.decryptPreKeyWhisperMessage(encryptedMessage.ciphertextMessage.body, 'binary');
+                // const plaintext = await sessionCipher.decryptWhisperMessage(encryptedMessage.ciphertextMessage.body);
 
                 console.log(plaintext);
 
