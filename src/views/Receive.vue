@@ -6,13 +6,7 @@
 
         <div v-if="registrationId">
             <b-form @submit="onSubmit" v-if="show" inline>
-                <b-form-input id="id"
-                              type="text"
-                              v-model="form.id"
-                              required
-                              class="mb-2 mr-sm-2 mb-sm-0"
-                              placeholder="id">
-                </b-form-input>
+                <b-form-select id="id" required v-model="form.id" :options="friends" class="mb-2 mr-sm-2 mb-sm-0"></b-form-select>
 
                 <b-button type="submit" variant="primary">Receive</b-button>
             </b-form>
@@ -21,17 +15,13 @@
             <b-alert variant="danger" show class="text-center">Not registered!</b-alert>
         </div>
 
-        <hr/>
-        <span class="text-muted small mr-4">Signal Store</span><br/>
-        <code>{{ store }}</code>
+        <div v-if="messages && messages.length > 0">
+            <b-alert variant="success" show class="text-center">{{ messages }}</b-alert>
+        </div>
 
-        <hr/>
-        <span class="text-muted small mr-4">Signal Server</span><br/>
-        <code>{{ server }}</code>
-
-        <hr/>
-        <span class="text-muted small mr-4">Signal Encrypted Messages</span><br/>
-        <code>{{ messages }}</code>
+        <!--<hr/>-->
+        <!--<span class="text-muted small mr-4">Signal Store</span><br/>-->
+        <!--<code>{{ store }}</code>-->
     </div>
 </template>
 
@@ -51,7 +41,7 @@
         },
         computed: {
             ...mapState([
-                'registrationId', 'deviceId', 'store', 'server', 'messages'
+                'registrationId', 'deviceId', 'store', 'messages', 'friends'
             ]),
 
         },

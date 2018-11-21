@@ -2,6 +2,8 @@
     <div>
         <h1>Register</h1>
 
+        <h2><span class="badge badge-warning">ID:</span> {{ registrationId }}|{{ deviceId }}</h2>
+
         <div>
             <b-form @submit="onSubmit" v-if="show" inline>
                 <b-form-input id="deviceId"
@@ -54,10 +56,6 @@
         <hr/>
         <span class="text-muted small mr-4">Signal Store</span><br/>
         <code>{{ store }}</code>
-
-        <hr/>
-        <span class="text-muted small mr-4">Signal Server</span><br/>
-        <code>{{ server }}</code>
     </div>
 </template>
 
@@ -77,9 +75,8 @@
         },
         computed: {
             ...mapState([
-                'name', 'deviceId', 'registrationId', 'identityKeyPair', 'preKey', 'signedPreKey', 'store', 'server'
+                'name', 'deviceId', 'registrationId', 'identityKeyPair', 'preKey', 'signedPreKey', 'store'
             ]),
-
         },
         methods: {
             onSubmit (evt) {
