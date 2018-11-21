@@ -63,28 +63,6 @@ export default new Vuex.Store({
             // needs to be in SignalProtocolStore
             state.store.storeSignedPreKey(signedPreKey.keyId, signedPreKey.keyPair);
         },
-        ['commit-local-keys'](state) {
-            // NOTE: No private keys go to the server - not sure type is needed?
-            let reqObj = {
-                type: 'init',
-                deviceId: state.deviceId,
-                registrationId: state.registrationId,
-                identityKey: state.identityKeyPair.pubKey,
-                signedPreKey: {
-                    keyId: state.signedPreKey.keyId,
-                    publicKey: state.signedPreKey.keyPair.pubKey,
-                    signature: state.signedPreKey.signature
-                },
-                preKey: {
-                    keyId: state.preKey.keyId,
-                    publicKey: state.preKey.keyPair.pubKey
-                }
-            };
-            console.log(reqObj);
-
-            return api.post(`/keys/register`, reqObj)
-                .then((res) => console.log(`registered user`, res));
-        },
         // FIXME send to server
         ['commit-message'](state, {id, ciphertext}) {
             console.log(`incoming message for ${id}: ${ciphertext}`);
@@ -121,8 +99,26 @@ export default new Vuex.Store({
         },
         async ['send-keys-to-server']({commit, dispatch, state, rootState}, form) {
             console.log(`Sending keys`);
+            // NOTE: No private keys go to the server - not sure type is needed?
+            let reqObj = {
+                type: 'init',
+                deviceId: state.deviceId,
+                registrationId: state.registrationId,
+                identityKey: state.identityKeyPair.pubKey,
+                signedPreKey: {
+                    keyId: state.signedPreKey.keyId,
+                    publicKey: state.signedPreKey.keyPair.pubKey,
+                    signature: state.signedPreKey.signature
+                },
+                preKey: {
+                    keyId: state.preKey.keyId,
+                    publicKey: state.preKey.keyPair.pubKey
+                }
+            };
+            console.log(reqObj);
 
-            commit('commit-local-keys');
+            return api.post(`/keys/register`, reqObj)
+                .then((res) => console.log(`registered keys`, res));
         },
         async ['send-message']({commit, dispatch, state, rootState}, form) {
             const [registrationId, deviceId] = form.id.split('|');

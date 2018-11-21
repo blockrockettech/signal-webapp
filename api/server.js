@@ -123,6 +123,7 @@ function receiveKeys(req, res) {
     console.log('\n');
     console.log('storageMap~~~~~~~');
     console.log(storageMap);
+    console.log('\n');
 }
 
 function sendKeys(req, res) {
