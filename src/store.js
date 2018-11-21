@@ -3,6 +3,8 @@ import Vuex from 'vuex';
 import axios from 'axios';
 import {InMemorySignalProtocolStore} from './InMemorySignalProtocolStore';
 
+import _ from 'lowdash';
+
 Vue.use(Vuex);
 
 // core signal lib - added to window from index.html IMPROVE?
@@ -34,6 +36,53 @@ const base64ToArrayBuffer = (base64) => {
     }
     return bytes.buffer;
 };
+
+// Util import from src/helpers.js
+var util = (function() {
+    'use strict';
+
+    var StaticArrayBufferProto = new ArrayBuffer().__proto__;
+
+    return {
+        toString: function(thing) {
+            if (typeof thing == 'string') {
+                return thing;
+            }
+            return new dcodeIO.ByteBuffer.wrap(thing).toString('binary');
+        },
+        toArrayBuffer: function(thing) {
+            if (thing === undefined) {
+                return undefined;
+            }
+            if (thing === Object(thing)) {
+                if (thing.__proto__ == StaticArrayBufferProto) {
+                    return thing;
+                }
+            }
+
+            var str;
+            if (typeof thing == "string") {
+                str = thing;
+            } else {
+                throw new Error("Tried to convert a non-string of type " + typeof thing + " to an array buffer");
+            }
+            return new dcodeIO.ByteBuffer.wrap(thing, 'binary').toArrayBuffer();
+        },
+        isEqual: function(a, b) {
+            // TODO: Special-case arraybuffers, etc
+            if (a === undefined || b === undefined) {
+                return false;
+            }
+            a = util.toString(a);
+            b = util.toString(b);
+            var maxLength = Math.max(a.length, b.length);
+            if (maxLength < 5) {
+                throw new Error("a/b compare too short");
+            }
+            return a.substring(0, Math.min(maxLength, a.length)) == b.substring(0, Math.min(maxLength, b.length));
+        }
+    };
+})();
 
 export default new Vuex.Store({
     state: {
@@ -153,7 +202,6 @@ export default new Vuex.Store({
                 const sessionBuilder = new ls.SessionBuilder(state.store, address);
 
                 // loads recipient's pre-keys - required to build shared key for encryption
-
                 const preKeyResp = await api.post(`/keys/lookup`, {registrationId, deviceId});
 
                 let keys = preKeyResp.data;
@@ -192,25 +240,28 @@ export default new Vuex.Store({
                 console.error(ex);
             }
         },
-        // FIXME UNTESTED
-        async ['receive-message']({commit, dispatch, state, rootState}) {
-            console.log(`Receiving from ${state.registrationId}${state.deviceId}`);
+        async ['receive-message']({commit, dispatch, state, rootState}, form) {
+            console.log(`Receiving from ${state.registrationId}|${state.deviceId}`);
 
-            const messages = state.messages[`${state.registrationId}|${state.deviceId}`];
-            console.log(messages);
+            let requestObject = {
+                messageTo: `${state.registrationId}|${state.deviceId}`,
+                messageFrom: `${form.id}`
+            };
+            const encryptedMessageData = await api.post(`/get/message`, requestObject);
 
-            // pop one
-            const message = messages[0];
+            const encryptedMessage = encryptedMessageData.data;
+            console.log(encryptedMessage);
 
-            let fromAddress = new ls.SignalProtocolAddress(message.registrationId, message.deviceId);
+            const [registrationId, deviceId] = form.id.split('|');
+            let fromAddress = new ls.SignalProtocolAddress(registrationId, deviceId);
 
             let sessionCipher = new ls.SessionCipher(state.store, fromAddress);
 
-            const plaintext = await sessionCipher.decryptPreKeyWhisperMessage(message.body, 'binary');
+            const plaintext = await sessionCipher.decryptPreKeyWhisperMessage(encryptedMessage.ciphertextMessage.body, 'binary');
 
             console.log(plaintext);
 
-            let decryptedMessage = window.util.toString(plaintext);
+            let decryptedMessage = util.toString(plaintext);
 
             console.log(decryptedMessage);
         }

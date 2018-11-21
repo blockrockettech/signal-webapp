@@ -168,13 +168,12 @@ function forwardMessageToClient (req, res) {
     if (messageStorageMap[messageStorageKey]) {
 
         responseObject = messageStorageMap[messageStorageKey];
-        // responseObject.messageFrom = {
-        //     registrationId: storageMap[reqObj.messageFromUniqueId].registrationId,
-        //     deviceId: storageMap[reqObj.messageFromUniqueId].deviceId
-        // };
+        responseObject.messageFrom = reqObj.messageFrom.toString();
+        responseObject.messageTo = reqObj.messageTo.toString();
 
     } else {
         responseObject = {err: `MSG ERROR: ${reqObj.messageTo.toString()}-${reqObj.messageFrom.toString()}`};
     }
+
     res.json(responseObject);
 }
