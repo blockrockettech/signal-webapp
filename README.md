@@ -30,5 +30,11 @@ npm run lint
 npm run test:unit
 ```
 
+
+### Start API
+```
+npm run api
+```
+
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).

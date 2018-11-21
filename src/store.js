@@ -1,12 +1,19 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import { InMemorySignalProtocolStore } from './InMemorySignalProtocolStore';
+import axios from 'axios';
+import {InMemorySignalProtocolStore} from './InMemorySignalProtocolStore';
 
 Vue.use(Vuex);
 
 // core signal lib - added to window from index.html IMPROVE?
 const ls = window.libsignal;
 const KeyHelper = ls.KeyHelper;
+
+const API_URL = "http://localhost:3000";
+
+const api = axios.create({
+    baseURL: `${API_URL}/api/`,
+});
 
 export default new Vuex.Store({
     state: {
@@ -29,7 +36,7 @@ export default new Vuex.Store({
         messages: {},
     },
     mutations: {
-        ['commit-account-registration'] (state, {deviceId, registrationId, identityKeyPair, preKey, signedPreKey}) {
+        ['commit-account-registration'](state, {deviceId, registrationId, identityKeyPair, preKey, signedPreKey}) {
 
             // build a new store on each account
             // when server based this should only happen once
@@ -56,11 +63,8 @@ export default new Vuex.Store({
             // needs to be in SignalProtocolStore
             state.store.storeSignedPreKey(signedPreKey.keyId, signedPreKey.keyPair);
         },
-        // FIXME send to server
-        ['commit-local-keys'] (state) {
-
-            // NOTE: No private keys go to the server
-            // not sure type is needed?
+        ['commit-local-keys'](state) {
+            // NOTE: No private keys go to the server - not sure type is needed?
             let reqObj = {
                 type: 'init',
                 deviceId: state.deviceId,
@@ -76,13 +80,13 @@ export default new Vuex.Store({
                     publicKey: state.preKey.keyPair.pubKey
                 }
             };
-
             console.log(reqObj);
 
-            Vue.set(state.server, `${state.registrationId}|${state.deviceId}`, reqObj);
+            return api.post(`/keys/register`, reqObj)
+                .then((res) => console.log(`registered user`, res));
         },
         // FIXME send to server
-        ['commit-message'] (state, {id, ciphertext}) {
+        ['commit-message'](state, {id, ciphertext}) {
             console.log(`incoming message for ${id}: ${ciphertext}`);
 
             Vue.set(state.messages, `${id}`, ciphertext);
@@ -90,7 +94,7 @@ export default new Vuex.Store({
     },
     actions: {
         // bootstraps a Signal device, registration, and keys
-        async ['generate-registration-id'] ({commit, dispatch, state, rootState}, form) {
+        async ['generate-registration-id']({commit, dispatch, state, rootState}, form) {
             console.log(`Generating Registration ID for ${JSON.stringify(form)}`);
 
             const registrationId = KeyHelper.generateRegistrationId();
@@ -115,12 +119,12 @@ export default new Vuex.Store({
 
             dispatch('send-keys-to-server', this.form);
         },
-        async ['send-keys-to-server'] ({commit, dispatch, state, rootState}, form) {
+        async ['send-keys-to-server']({commit, dispatch, state, rootState}, form) {
             console.log(`Sending keys`);
 
             commit('commit-local-keys');
         },
-        async ['send-message'] ({commit, dispatch, state, rootState}, form) {
+        async ['send-message']({commit, dispatch, state, rootState}, form) {
             const [registrationId, deviceId] = form.id.split('|');
 
             console.log(`Sending "${form.message}" to ${registrationId}|${deviceId}`);
@@ -154,7 +158,7 @@ export default new Vuex.Store({
             }
         },
         // FIXME UNTESTED
-        async ['receive-message'] ({commit, dispatch, state, rootState}) {
+        async ['receive-message']({commit, dispatch, state, rootState}) {
             console.log(`Receiving from ${state.registrationId}${state.deviceId}`);
 
             const messages = state.messages[`${state.registrationId}|${state.deviceId}`];
@@ -172,7 +176,7 @@ export default new Vuex.Store({
             console.log(plaintext);
 
             let decryptedMessage = window.util.toString(plaintext);
-            
+
             console.log(decryptedMessage);
         }
     },

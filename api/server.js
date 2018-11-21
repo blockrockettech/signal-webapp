@@ -88,22 +88,24 @@ messageStoreMap = {
 
 
 const express = require('express');
+const cors = require('cors');
 
 const app = express();
-
-const constants = {
-    INIT: 'init',
-    PRE_KEYS: 'pre-keys'
-};
+app.use(cors());
 
 app.use(express.json({strict: true}));
 
 app.listen(3000, () => console.log('listening on 3000'));
 
-app.post('/send', receiveKeys);
-app.post('/get', sendKeys);
-app.post('/send/message', storeIncomingMessage);
-app.post('/get/message', forwardMessageToClient);
+app.post('/api/keys/register', receiveKeys);
+app.post('/api/keys/lookup', sendKeys);
+app.post('/api/send/message', storeIncomingMessage);
+app.post('/api/get/message', forwardMessageToClient);
+
+const constants = {
+    INIT: 'init',
+    PRE_KEYS: 'pre-keys'
+};
 
 var storageMap = {};
 var messageStorageMap = {};
