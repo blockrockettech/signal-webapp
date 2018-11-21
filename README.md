@@ -5,36 +5,24 @@
 npm install
 ```
 
-### Compiles and hot-reloads for development
+### Starts Client (Messenger)
 ```
 npm run serve
 ```
 
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Run your tests
-```
-npm run test
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Run your unit tests
-```
-npm run test:unit
-```
-
-
-### Start API
+### Starts Server (API)
 ```
 npm run api
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+
+## Steps
+
+* Open two separate browsers
+* Register `123` on browser 1
+* Register `446` on browser 2
+* Add `XXX|446` as a friend on browser 1
+* Send message to `XXX|456` on browser 1
+* Receive message on browser 2 from `XXX|123`
+* Send message to `XXX|123` on browser 2
+* _repeat messaging steps to communicate_
