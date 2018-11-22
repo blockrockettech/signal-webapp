@@ -25,11 +25,22 @@
             <b-alert variant="danger" show class="text-center">Not registered!</b-alert>
         </div>
 
-        <div class="row">
-            <div v-if="messages && messages.length > 0" class="col">
-                <b-table striped hover :items="messages"></b-table>
+
+        <div v-if="messages && messages.length > 0" id="messages">
+            <div v-for="msg in orderBy(messages, 'timestamp')" :key="msg.timestamp" class="row">
+                <div class="col-sm-2 text-muted small">
+                    {{ new Date(msg.timestamp).toLocaleTimeString() }}
+                </div>
+                <div class="col-sm-8">
+                    {{ msg.message }}
+                    <code>{{ msg.ciphertextMessage }}</code>
+                </div>
+                <div class="col-sm-2 text-muted float-right">
+                    <span class="badge badge-success" v-if="msg.messageFrom != `${registrationId}|${deviceId}`">{{ msg.messageFrom }}</span>
+                </div>
             </div>
         </div>
+
     </div>
 </template>
 
@@ -68,5 +79,17 @@
     div {
         margin-bottom: 20px;
         margin-top: 20px;
+    }
+
+    #messages {
+        div {
+            margin-bottom: 3px;
+            margin-top: 3px;
+        }
+
+        code {
+            font-size: 0.2rem;
+        }
+
     }
 </style>
