@@ -8,8 +8,6 @@
         </main>
         <footer>
             <div id="nav">
-                <router-link to="/" class="p-3">Home</router-link>
-                &bull;
                 <router-link to="/register" class="p-3">Register</router-link>
                 &bull;
                 <router-link to="/friends" class="p-3">Friends</router-link>

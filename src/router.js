@@ -1,6 +1,5 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import Home from './views/Home';
 import About from './views/About';
 import Register from './views/Register';
 import Friends from './views/Friends';
@@ -14,8 +13,8 @@ export default new Router({
     routes: [
         {
             path: '/',
-            name: 'home',
-            component: Home
+            name: 'register',
+            component: Register
         },
         {
             path: '/about',

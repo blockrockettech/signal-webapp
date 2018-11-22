@@ -1,13 +1,14 @@
 'use strict';
 
 // @author Akash Singh
+// BASED ON: https://github.com/akash4393/libsignal-javascript-example
 
 /*
 * Sample Node server for signal
 */
 
 /*
-receiveKeys - get keys (initial key packet and preKeys) from client.
+registerKeys - get keys (initial key packet and preKeys) from client.
 Initial/Registration Packet:
 req.body = {
 	type: 'init'
@@ -51,7 +52,7 @@ req.body = {
 */
 
 /*
-sendKeys - send keys packet to a client that requests for it
+lookupKeys - send keys packet to a client that requests for it
 Get initial request:
 req.body = {
 	type: 'init'
@@ -96,20 +97,22 @@ app.use(express.json({strict: true}));
 
 app.listen(3000, () => console.log('listening on 3000'));
 
-app.post('/api/keys/register', receiveKeys);
-app.post('/api/keys/lookup', sendKeys);
+app.post('/api/keys/register', registerKeys);
+app.post('/api/keys/lookup', lookupKeys);
 app.post('/api/send/message', storeIncomingMessage);
 app.post('/api/get/message', forwardMessageToClient);
+app.get('/api/get/message/:id', retrieveRecipientMessage);
 
 const constants = {
     INIT: 'init',
     PRE_KEYS: 'pre-keys'
 };
 
-var storageMap = {};
-var messageStorageMap = {};
+const storageMap = {};
+const messageStorageMap = {};
+const recipientMessageStorageMap = {};
 
-function receiveKeys (req, res) {
+function registerKeys (req, res) {
     const reqObj = req.body;
     const {registrationId, deviceId} = reqObj;
     const storageKey = `${registrationId.toString()}|${deviceId.toString()}`;
@@ -120,13 +123,15 @@ function receiveKeys (req, res) {
         storageMap[storageKey] = reqObj;
         res.json({msg: 'Initial packet successfully saved'});
     }
+
     console.log('\n');
-    console.log('storageMap~~~~~~~');
+    console.log('--- KEY MAP ---');
     console.log(storageMap);
+    console.log('--- KEY MAP ---');
     console.log('\n');
 }
 
-function sendKeys (req, res) {
+function lookupKeys (req, res) {
     const {registrationId, deviceId} = req.body;
     const storageKey = `${registrationId.toString()}|${deviceId.toString()}`;
 
@@ -138,29 +143,53 @@ function sendKeys (req, res) {
         // storageMap[storageKey].pop(); // TODO is this needed or can we use the same pre-key?
 
     } else {
-        responseObject = {
-            err: 'Keys for ' + storageKey + ' user does not exist'
-        };
+        responseObject = {err: 'Keys for ' + storageKey + ' user does not exist'};
     }
+
+    console.log('\n');
+    console.log('--- KEY ---');
     console.log(responseObject);
+    console.log('--- KEY ---');
+    console.log('\n');
+
     res.json(responseObject);
 }
 
 function storeIncomingMessage (req, res) {
     let reqObj = req.body;
     let messageStorageKey = `${reqObj.messageTo.toString()}-${reqObj.messageFrom.toString()}`;
+
+    const recipient = reqObj.messageTo.toString();
+
     //FIXME stack the messages as only saves the last one...
     messageStorageMap[messageStorageKey] = reqObj;
-    res.json({msg: 'Message successfully saved'});
+
+    if (!recipientMessageStorageMap[recipient]) {
+        recipientMessageStorageMap[recipient] = [];
+    }
+
+    recipientMessageStorageMap[recipient].push(reqObj);
+
     console.log('\n');
-    console.log('~~~~~~~messageStorageMap~~~~~~~');
+    console.log('--- MESSAGES ---');
     console.log(messageStorageMap);
+    console.log('--- MESSAGES ---');
+    console.log('\n');
+
+    console.log('\n');
+    console.log('--- RECIPIENT MESSAGES ---');
+    console.log(recipientMessageStorageMap);
+    console.log('--- RECIPIENT MESSAGES ---');
+    console.log('\n');
+
+    res.sendStatus(200);
 }
 
 function forwardMessageToClient (req, res) {
     let reqObj = req.body;
     let messageStorageKey = `${reqObj.messageTo.toString()}-${reqObj.messageFrom.toString()}`;
     let responseObject;
+
     if (messageStorageMap[messageStorageKey]) {
 
         responseObject = messageStorageMap[messageStorageKey];
@@ -172,4 +201,23 @@ function forwardMessageToClient (req, res) {
     }
 
     res.json(responseObject);
+}
+
+function retrieveRecipientMessage (req, res) {
+
+    console.log(`retrieveRecipientMessage for ${req.params.id}`);
+    if (recipientMessageStorageMap[req.params.id]) {
+        let messages = recipientMessageStorageMap[req.params.id];
+        if (messages && messages.length > 0) {
+            const mes = messages.shift();
+            console.log('\n');
+            console.log('--- MESSAGE ---');
+            console.log(mes);
+            console.log('--- MESSAGE ---');
+            console.log('\n');
+            return res.json(mes);
+        }
+    }
+
+    return res.sendStatus(204);
 }
