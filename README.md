@@ -23,6 +23,5 @@ npm run api
 * Register `446` on browser 2
 * Add `XXX|446` as a friend on browser 1
 * Send message to `XXX|456` on browser 1
-* Receive message on browser 2 from `XXX|123`
 * Send message to `XXX|123` on browser 2
 * _repeat messaging steps to communicate_
