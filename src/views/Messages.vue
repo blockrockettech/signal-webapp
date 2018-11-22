@@ -32,11 +32,11 @@
                     {{ new Date(msg.timestamp).toLocaleTimeString() }}
                 </div>
                 <div class="col-sm-8">
-                    {{ msg.message }}
+                    <span v-bind:class="{'them': msg.messageFrom !== `${registrationId}|${deviceId}`}">{{ msg.message }}</span>
                     <code>{{ msg.ciphertextMessage }}</code>
                 </div>
                 <div class="col-sm-2 text-muted float-right">
-                    <span class="badge badge-success" v-if="msg.messageFrom != `${registrationId}|${deviceId}`">{{ msg.messageFrom }}</span>
+                    <span class="badge badge-success" v-if="msg.messageFrom !== `${registrationId}|${deviceId}`">{{ msg.messageFrom }}</span>
                 </div>
             </div>
         </div>
@@ -88,8 +88,13 @@
         }
 
         code {
-            font-size: 0.2rem;
+            font-size: 0.5rem;
+            margin-right: 10px;
+            margin-left: 10px;
         }
 
+        .them {
+            float: right;
+        }
     }
 </style>

@@ -173,7 +173,7 @@ export default new Vuex.Store({
             // Every x seconds check if the main account has changed
             setInterval(() => {
                 dispatch('poll-message');
-            }, 10000);
+            }, 1000);
         },
         async ['send-keys-to-server'] ({commit, dispatch, state, rootState}, form) {
             try {
