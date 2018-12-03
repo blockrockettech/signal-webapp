@@ -21,7 +21,6 @@
 </template>
 
 <style lang="scss">
-
     $primary: #41c0d1;
 
     $font-family-base: 'Avenir', Helvetica, Arial, sans-serif;

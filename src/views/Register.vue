@@ -2,9 +2,7 @@
     <div>
         <h1>Register</h1>
 
-        <h2><span class="badge badge-warning">ID:</span> {{ registrationId }}|{{ deviceId }}</h2>
-
-        <div>
+        <div v-if="!registrationId">
             <b-form @submit="onSubmit" v-if="show" inline>
                 <b-form-input id="deviceId"
                               type="text"
@@ -17,6 +15,11 @@
                 <b-button type="submit" variant="primary">Register</b-button>
             </b-form>
         </div>
+        <div v-else>
+            <router-link to="/friends" class="float-right">Friends</router-link>
+        </div>
+
+
         <!--<div v-else>-->
             <!--<b-alert variant="primary" show class="text-center">{{ deviceId }} has registered!</b-alert>-->
         <!--</div>-->
@@ -29,6 +32,10 @@
             <div v-if="registrationId" class="col">
                 <span class="text-muted small mr-4">Registration ID</span><br/>
                 <code>{{ registrationId }}</code>
+            </div>
+            <div v-if="registrationId && deviceId" class="col">
+                <span class="text-muted small mr-4">Combo ID</span><br/>
+                <code>{{ deviceId }}-{{ registrationId }}</code>
             </div>
         </div>
 

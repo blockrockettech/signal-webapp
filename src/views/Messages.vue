@@ -2,7 +2,20 @@
     <div>
         <h1>Messages</h1>
 
-        <h2><span class="badge badge-warning">ID:</span> {{ registrationId }}|{{ deviceId }}</h2>
+        <div class="row">
+            <div v-if="deviceId" class="col">
+                <span class="text-muted small mr-4">Device ID</span><br/>
+                <code>{{ deviceId }}</code>
+            </div>
+            <div v-if="registrationId" class="col">
+                <span class="text-muted small mr-4">Registration ID</span><br/>
+                <code>{{ registrationId }}</code>
+            </div>
+            <div v-if="registrationId && deviceId" class="col">
+                <span class="text-muted small mr-4">Combo ID</span><br/>
+                <code>{{ deviceId }}-{{ registrationId }}</code>
+            </div>
+        </div>
 
         <div v-if="registrationId">
             <b-form @submit="onSend" v-if="show" inline>

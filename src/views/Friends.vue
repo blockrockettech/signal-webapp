@@ -10,7 +10,7 @@
                               v-model="form.id"
                               required
                               class="mb-2 mr-sm-2 mb-sm-0"
-                              placeholder="id">
+                              placeholder="comboId">
                 </b-form-input>
 
                 <b-button type="submit" variant="primary">Add Friend</b-button>

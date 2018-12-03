@@ -14,7 +14,7 @@ const KeyHelper = ls.KeyHelper;
 const API_URL = 'http://localhost:3000';
 
 const api = axios.create({
-    baseURL: `${API_URL}/api/`,
+    baseURL: `${API_URL}/`,
 });
 
 const arrayBufferToBase64 = (buffer) => {
@@ -173,7 +173,7 @@ export default new Vuex.Store({
             // Every x seconds check if the main account has changed
             setInterval(() => {
                 dispatch('poll-message');
-            }, 1000);
+            }, 30000);
         },
         async ['send-keys-to-server'] ({commit, dispatch, state, rootState}, form) {
             try {
@@ -181,32 +181,31 @@ export default new Vuex.Store({
 
                 // NOTE: No private keys go to the server - not sure type is needed?
                 let reqObj = {
-                    type: 'init',
-                    deviceId: state.deviceId,
-                    registrationId: state.registrationId,
+                    deviceId: parseInt(state.deviceId),
+                    registrationId: parseInt(state.registrationId),
                     identityKey: arrayBufferToBase64(state.identityKeyPair.pubKey),
                     signedPreKey: {
-                        keyId: state.signedPreKey.keyId,
+                        keyId: parseInt(state.signedPreKey.keyId),
                         publicKey: arrayBufferToBase64(state.signedPreKey.keyPair.pubKey),
                         signature: arrayBufferToBase64(state.signedPreKey.signature)
                     },
                     preKey: {
-                        keyId: state.preKey.keyId,
+                        keyId: parseInt(state.preKey.keyId),
                         publicKey: arrayBufferToBase64(state.preKey.keyPair.pubKey)
                     }
                 };
                 console.log(reqObj);
 
-                const res = await api.post(`/keys/register`, reqObj);
-                console.log(`registered keys: ${res}`);
+                const res = await api.put(`/keys`, reqObj);
+                console.log(`registered keys`, res);
             } catch (ex) {
                 console.error(ex);
             }
         },
         async ['add-friend'] ({commit, dispatch, state, rootState}, form) {
             try {
-                const [registrationId, deviceId] = form.id.split('|');
-                console.log(`Adding ${registrationId}|${deviceId}`);
+                const [deviceId, registrationId] = form.id.split('-');
+                console.log(`Adding device [${deviceId}] registration [${registrationId}]`);
 
                 const address = new ls.SignalProtocolAddress(registrationId, deviceId);
 
@@ -216,7 +215,7 @@ export default new Vuex.Store({
                 const sessionBuilder = new ls.SessionBuilder(state.store, address);
 
                 // loads recipient's pre-keys - required to build shared key for encryption
-                const preKeyResp = await api.post(`/keys/lookup`, {registrationId, deviceId});
+                const preKeyResp = await api.get(`/keys?deviceId=${state.deviceId}&registrationId=${state.registrationId}`);
 
                 let keys = preKeyResp.data;
 
@@ -231,7 +230,8 @@ export default new Vuex.Store({
                 // add recipient to session
                 await sessionBuilder.processPreKey(keys);
 
-                console.log(`pre key processed`);
+                console.log(`pre key processed`, keys);
+
                 commit('commit-friend', form.id);
             } catch (ex) {
                 console.error(ex);
@@ -239,8 +239,8 @@ export default new Vuex.Store({
         },
         async ['send-message'] ({commit, dispatch, state, rootState}, form) {
             try {
-                const [registrationId, deviceId] = form.id.split('|');
-                console.log(`Sending "${form.message}" to ${registrationId}|${deviceId}`);
+                const [deviceId, registrationId] = form.id.split('-');
+                console.log(`Sending "${form.message}" to device [${deviceId}] registraionId [${registrationId}]`);
 
                 const address = new ls.SignalProtocolAddress(registrationId, deviceId);
 
@@ -251,13 +251,14 @@ export default new Vuex.Store({
                 console.log(ciphertext);
 
                 let msgObj = {
-                    messageTo: form.id,
-                    messageFrom: `${state.registrationId}|${state.deviceId}`,
-                    ciphertextMessage: ciphertext,
-                    timestamp: new Date().getTime()
+                    destinationDeviceId: parseInt(deviceId),
+                    destinationRegistrationId: parseInt(registrationId),
+                    deviceId: parseInt(state.deviceId),
+                    registrationId: parseInt(state.registrationId),
+                    ciphertextMessage: ciphertext
                 };
 
-                const res = await api.post(`/send/message`, msgObj);
+                const res = await api.put(`/messages`, msgObj);
                 console.log(`sent message cipher`, res);
 
                 // add message into local store with unencrypted
@@ -270,44 +271,46 @@ export default new Vuex.Store({
         },
         async ['poll-message'] ({commit, dispatch, state, rootState}) {
             try {
-                console.log(`Poll from ${state.registrationId}|${state.deviceId}`);
+                console.log(`/messages?deviceId=${state.deviceId}&registrationId=${state.registrationId}`);
 
-                const encryptedMessageData = await api.get(`/get/message/${state.registrationId}|${state.deviceId}`);
+                const encryptedMessageData = await api.get(`/messages?deviceId=${state.deviceId}&registrationId=${state.registrationId}`);
 
-                console.log(encryptedMessageData);
                 if (encryptedMessageData.status === 200) {
                     const encryptedMessage = encryptedMessageData.data;
                     console.log(encryptedMessage);
 
-                    const [registrationId, deviceId] = encryptedMessage.messageFrom.split('|');
-                    let fromAddress = new ls.SignalProtocolAddress(registrationId, deviceId);
+                    if (encryptedMessage && encryptedMessage.length > 0) {
+                        const message = encryptedMessage[0];
 
-                    let sessionCipher = new ls.SessionCipher(state.store, fromAddress);
+                        const registrationId = message.value.registrationId;
+                        const deviceId = message.value.deviceId;
 
-                    let plaintext;
-                    if (encryptedMessage.ciphertextMessage.type === 3) {
-                        console.log(`TYPE 3`);
-                        plaintext = await sessionCipher.decryptPreKeyWhisperMessage(encryptedMessage.ciphertextMessage.body, 'binary');
+                        console.log(`Received from device [${deviceId}] registraion [${registrationId}]`);
 
-                        commit('commit-friend', encryptedMessage.messageFrom);
+                        let fromAddress = new ls.SignalProtocolAddress(registrationId, deviceId);
+                        let sessionCipher = new ls.SessionCipher(state.store, fromAddress);
+
+                        let plaintext;
+                        if (message.value.ciphertextMessage.type === 3) {
+                            console.log(`TYPE 3: decryptPreKeyWhisperMessage`);
+                            plaintext = await sessionCipher.decryptPreKeyWhisperMessage(message.value.ciphertextMessage.body, 'binary');
+                            commit('commit-friend', `${deviceId}|${registrationId}`);
+                        }
+                        else if (message.value.ciphertextMessage.type === 1) {
+                            console.log(`TYPE 1: decryptWhisperMessage`);
+                            plaintext = await sessionCipher.decryptWhisperMessage(message.value.ciphertextMessage.body, 'binary');
+                        }
+
+                        console.log(plaintext);
+                        let decryptedMessage = util.toString(plaintext);
+
+                        console.log(decryptedMessage);
+
+                        commit('commit-message', {
+                            ...message.value,
+                            message: decryptedMessage,
+                        });
                     }
-                    else if (encryptedMessage.ciphertextMessage.type === 1) {
-                        console.log(`TYPE 1`);
-                        plaintext = await sessionCipher.decryptWhisperMessage(encryptedMessage.ciphertextMessage.body, 'binary');
-                    }
-
-                    console.log(plaintext);
-                    let decryptedMessage = util.toString(plaintext);
-
-                    console.log(decryptedMessage);
-
-                    commit('commit-message', {
-                        messageTo: `${state.registrationId}|${state.deviceId}`,
-                        messageFrom: encryptedMessage.messageFrom,
-                        message: decryptedMessage,
-                        ciphertextMessage: encryptedMessage.ciphertextMessage.body,
-                        timestamp: encryptedMessage.timestamp
-                    });
                 }
             } catch (ex) {
                 console.error(ex);
