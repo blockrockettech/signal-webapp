@@ -215,7 +215,7 @@ export default new Vuex.Store({
                 const sessionBuilder = new ls.SessionBuilder(state.store, address);
 
                 // loads recipient's pre-keys - required to build shared key for encryption
-                const preKeyResp = await api.get(`/keys?deviceId=${state.deviceId}&registrationId=${state.registrationId}`);
+                const preKeyResp = await api.get(`/keys?deviceId=${deviceId}&registrationId=${registrationId}`);
 
                 let keys = preKeyResp.data;
 
@@ -240,7 +240,7 @@ export default new Vuex.Store({
         async ['send-message'] ({commit, dispatch, state, rootState}, form) {
             try {
                 const [deviceId, registrationId] = form.id.split('-');
-                console.log(`Sending "${form.message}" to device [${deviceId}] registraionId [${registrationId}]`);
+                console.log(`Sending "${form.message}" to device [${deviceId}] registration [${registrationId}]`);
 
                 const address = new ls.SignalProtocolAddress(registrationId, deviceId);
 
@@ -294,7 +294,7 @@ export default new Vuex.Store({
                         if (message.value.ciphertextMessage.type === 3) {
                             console.log(`TYPE 3: decryptPreKeyWhisperMessage`);
                             plaintext = await sessionCipher.decryptPreKeyWhisperMessage(message.value.ciphertextMessage.body, 'binary');
-                            commit('commit-friend', `${deviceId}|${registrationId}`);
+                            commit('commit-friend', `${deviceId}-${registrationId}`);
                         }
                         else if (message.value.ciphertextMessage.type === 1) {
                             console.log(`TYPE 1: decryptWhisperMessage`);
