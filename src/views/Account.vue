@@ -1,28 +1,6 @@
 <template>
     <div>
-        <h1>Register</h1>
-
-        <div v-if="!registrationId">
-            <b-form @submit="onSubmit" v-if="show" inline>
-                <b-form-input id="deviceId"
-                              type="text"
-                              v-model="form.deviceId"
-                              required
-                              class="mb-2 mr-sm-2 mb-sm-0"
-                              placeholder="Device ID">
-                </b-form-input>
-
-                <b-button type="submit" variant="primary">Register</b-button>
-            </b-form>
-        </div>
-        <div v-else>
-            <router-link to="/friends" class="float-right">Friends</router-link>
-        </div>
-
-
-        <!--<div v-else>-->
-            <!--<b-alert variant="primary" show class="text-center">{{ deviceId }} has registered!</b-alert>-->
-        <!--</div>-->
+        <h1>Account</h1>
 
         <div class="row">
             <div v-if="deviceId" class="col">
@@ -70,7 +48,7 @@
     import { mapGetters, mapState } from 'vuex';
 
     export default {
-        name: 'register',
+        name: 'account',
         components: {},
         data () {
             return {

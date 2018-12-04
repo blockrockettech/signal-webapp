@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import About from './views/About';
-import Register from './views/Register';
+import SignIn from './views/SignIn';
+import Account from './views/Account';
 import Friends from './views/Friends';
 import Messages from './views/Messages';
 
@@ -13,18 +13,13 @@ export default new Router({
     routes: [
         {
             path: '/',
-            name: 'home',
-            component: Register
+            name: 'sign-in',
+            component: SignIn
         },
         {
-            path: '/about',
-            name: 'about',
-            component: About
-        },
-        {
-            path: '/register',
+            path: '/account',
             name: 'register',
-            component: Register
+            component: Account
         },
         {
             path: '/friends',

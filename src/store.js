@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import axios from 'axios';
+import createPersistedState from 'vuex-persistedstate'
 import { InMemorySignalProtocolStore } from './InMemorySignalProtocolStore';
 
 /* global dcodeIO */
@@ -84,6 +85,12 @@ const util = (function () {
 })();
 
 export default new Vuex.Store({
+    // plugins: [createPersistedState({
+    //     reducer: state => ({
+    //         deviceId: state.deviceId,
+    //         registrationId: state.registrationId,
+    //     }),
+    // })],
     state: {
         // local session vars
         deviceId: null,
@@ -106,8 +113,8 @@ export default new Vuex.Store({
             // when server based this should only happen once
             state.store = new InMemorySignalProtocolStore();
 
-            state.deviceId = deviceId;
-            state.registrationId = registrationId;
+            state.deviceId = parseInt(deviceId);
+            state.registrationId = parseInt(registrationId);
 
             // needs to be in SignalProtocolStore
             state.store.put('registrationId', registrationId);
@@ -173,7 +180,7 @@ export default new Vuex.Store({
             // Every x seconds check if the main account has changed
             setInterval(() => {
                 dispatch('poll-message');
-            }, 30000);
+            }, 3000);
         },
         async ['send-keys-to-server'] ({commit, dispatch, state, rootState}, form) {
             try {

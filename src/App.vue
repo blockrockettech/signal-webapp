@@ -1,24 +1,40 @@
 <template>
     <div class="container">
         <header class="text-center">
-            <img src="./assets/odin-Hires-icon.png" style="height: 100px;"/>
+            <div v-if="deviceId && registrationId">
+                <router-link to="/messages" class="p-3">Messages</router-link>
+                &bull;
+                <router-link to="/friends" class="p-3">Friends</router-link>
+                &bull;
+                <router-link to="/account" class="p-3">Account</router-link>
+                <code class="ml-5">👽 {{ deviceId }}-{{ registrationId }}</code>
+            </div>
+            <div v-else>
+                <router-link to="/" class="p-3">Home</router-link>
+            </div>
         </header>
         <main id="app">
             <router-view/>
         </main>
         <footer>
-            <div id="nav">
-                <router-link to="/register" class="p-3">Register</router-link>
-                &bull;
-                <router-link to="/friends" class="p-3">Friends</router-link>
-                &bull;
-                <router-link to="/messages" class="p-3">Messages</router-link>
-                &bull;
-                <router-link to="/about" class="p-3">About</router-link>
-            </div>
         </footer>
     </div>
 </template>
+
+<script>
+    import { mapGetters, mapState } from 'vuex';
+
+    export default {
+        name: 'app',
+        components: {},
+        computed: {
+            ...mapState(['registrationId', 'deviceId']),
+        },
+        methods: {
+
+        }
+    };
+</script>
 
 <style lang="scss">
     $primary: #41c0d1;

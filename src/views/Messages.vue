@@ -1,23 +1,24 @@
 <template>
-    <div>
+    <div id="messages-page">
         <h1>Messages</h1>
 
-        <div class="row">
-            <div v-if="deviceId" class="col">
-                <span class="text-muted small mr-4">Device ID</span><br/>
-                <code>{{ deviceId }}</code>
-            </div>
-            <div v-if="registrationId" class="col">
-                <span class="text-muted small mr-4">Registration ID</span><br/>
-                <code>{{ registrationId }}</code>
-            </div>
-            <div v-if="registrationId && deviceId" class="col">
-                <span class="text-muted small mr-4">Combo ID</span><br/>
-                <code>{{ deviceId }}-{{ registrationId }}</code>
+        <div v-if="messages && messages.length > 0" id="messages">
+            <div v-for="msg in orderBy(messages, '-timestamp')" :key="msg.timestamp" class="row">
+                <!--{{ msg }}-->
+                <div class="col-sm-2 text-muted small">
+                    {{ new Date(msg.timestamp).toLocaleTimeString() }}
+                </div>
+                <div class="col-sm-8">
+                    <span v-bind:class="{'them': msg.deviceId !== deviceId}">{{ msg.message }}</span>
+                    <!--<code>{{ msg.ciphertextMessage }}</code>-->
+                </div>
+                <div class="col-sm-2">
+                    <span class="badge badge-success" v-if="msg.deviceId !== deviceId">{{ msg.deviceId }}-{{ msg.registrationId }}</span>
+                </div>
             </div>
         </div>
 
-        <div v-if="registrationId">
+        <div v-if="registrationId" class="fixed-bottom m-3">
             <b-form @submit="onSend" v-if="show" inline>
 
                 <b-form-select id="id" required v-model="form.id" :options="friends" class="mb-2 mr-sm-2 mb-sm-0"></b-form-select>
@@ -26,7 +27,7 @@
                               type="text"
                               v-model="form.message"
                               required
-                              class="mb-2 mr-sm-2 mb-sm-0"
+                              class="mb-2 mr-sm-2 mb-sm-0 w-50"
                               placeholder="Message">
                 </b-form-input>
 
@@ -34,26 +35,6 @@
             </b-form>
 
         </div>
-        <div v-else>
-            <b-alert variant="danger" show class="text-center">Not registered!</b-alert>
-        </div>
-
-
-        <div v-if="messages && messages.length > 0" id="messages">
-            <div v-for="msg in orderBy(messages, 'timestamp')" :key="msg.timestamp" class="row">
-                <div class="col-sm-2 text-muted small">
-                    {{ new Date(msg.timestamp).toLocaleTimeString() }}
-                </div>
-                <div class="col-sm-8">
-                    <span v-bind:class="{'them': msg.messageFrom !== `${registrationId}|${deviceId}`}">{{ msg.message }}</span>
-                    <code>{{ msg.ciphertextMessage }}</code>
-                </div>
-                <div class="col-sm-2 text-muted float-right">
-                    <span class="badge badge-success" v-if="msg.messageFrom !== `${registrationId}|${deviceId}`">{{ msg.messageFrom }}</span>
-                </div>
-            </div>
-        </div>
-
     </div>
 </template>
 
@@ -92,6 +73,10 @@
     div {
         margin-bottom: 20px;
         margin-top: 20px;
+    }
+
+    #messages-page {
+        margin-bottom: 100px;
     }
 
     #messages {
