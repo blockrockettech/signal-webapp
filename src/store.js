@@ -270,6 +270,7 @@ export default new Vuex.Store({
 
                 // add message into local store with unencrypted
                 msgObj.message = form.message;
+                msgObj.timestamp = new Date().getTime();
 
                 commit('commit-sent-message', msgObj);
             } catch (ex) {
@@ -317,6 +318,9 @@ export default new Vuex.Store({
                             ...message.value,
                             message: decryptedMessage,
                         });
+
+                        // delete message on receipt
+                        await api.delete(`/messages?key=${message.key}`);
                     }
                 }
             } catch (ex) {

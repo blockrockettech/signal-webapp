@@ -2,7 +2,15 @@
     <div>
         <h1>Friends</h1>
 
-        <div v-if="registrationId">
+        <div class="row">
+            <div v-if="friends && friends.length > 0" class="col">
+                <ul>
+                    <li v-for="friend in friends" v-bind:key="friend"><span class="badge badge-primary">{{ friend }}</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div v-if="registrationId" class="fixed-bottom m-3">
             <b-form @submit="onSubmit" v-if="show" inline>
 
                 <b-form-input id="id"
@@ -10,23 +18,11 @@
                               v-model="form.id"
                               required
                               class="mb-2 mr-sm-2 mb-sm-0"
-                              placeholder="comboId">
+                              placeholder="">
                 </b-form-input>
 
                 <b-button type="submit" variant="primary">Add Friend</b-button>
             </b-form>
-        </div>
-        <div v-else>
-            <b-alert variant="danger" show class="text-center">Not registered!</b-alert>
-        </div>
-
-        <h3>Friends</h3>
-        <div class="row">
-            <div v-if="friends && friends.length > 0" class="col">
-                <ul>
-                    <li v-for="friend in friends" v-bind:key="friend">{{ friend }}</li>
-                </ul>
-            </div>
         </div>
     </div>
 </template>

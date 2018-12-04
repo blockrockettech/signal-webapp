@@ -5,11 +5,11 @@
         <div v-if="messages && messages.length > 0" id="messages">
             <div v-for="msg in orderBy(messages, '-timestamp')" :key="msg.timestamp" class="row">
                 <!--{{ msg }}-->
-                <div class="col-sm-2 text-muted small">
-                    {{ new Date(msg.timestamp).toLocaleTimeString() }}
-                </div>
-                <div class="col-sm-8">
-                    <span v-bind:class="{'them': msg.deviceId !== deviceId}">{{ msg.message }}</span>
+                <div class="col-sm-10">
+                    <span v-bind:class="{'them': msg.deviceId !== deviceId}">
+                        {{ msg.message }}
+                        <span class="text-muted xs">{{ new Date(msg.timestamp).toLocaleTimeString() }}</span>
+                    </span>
                     <!--<code>{{ msg.ciphertextMessage }}</code>-->
                 </div>
                 <div class="col-sm-2">
@@ -27,13 +27,12 @@
                               type="text"
                               v-model="form.message"
                               required
-                              class="mb-2 mr-sm-2 mb-sm-0 w-50"
+                              class="mb-2 mr-sm-2 mb-sm-0"
                               placeholder="Message">
                 </b-form-input>
 
                 <b-button type="submit" variant="primary">Send</b-button>
             </b-form>
-
         </div>
     </div>
 </template>
@@ -63,7 +62,11 @@
             onSend (evt) {
                 evt.preventDefault();
                 // alert(JSON.stringify(this.form));
-                this.$store.dispatch('send-message', this.form);
+                this.$store.dispatch('send-message', this.form)
+                    .then(() => {
+                        this.form.message = '';
+                        this.form.id = this.friends ? this.friends[0] : null;
+                    });
             }
         }
     };
@@ -93,6 +96,11 @@
 
         .them {
             float: right;
+        }
+
+        .xs {
+            font-size: 0.5rem;
+            margin-left: 5px;
         }
     }
 </style>
