@@ -62,7 +62,8 @@
 
                 let that = this;
                 return this.messages.filter(function (msg) {
-                    return msg.deviceId === that.deviceId || msg.deviceId === parseInt(that.$route.params.id.split('-')[0]);
+                    const destinationDeviceId =  parseInt(that.$route.params.id.split('-')[0]);
+                    return (msg.deviceId === that.deviceId && msg.destinationDeviceId === destinationDeviceId) || msg.deviceId === destinationDeviceId;
                 })
             }
         },
