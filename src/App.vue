@@ -1,13 +1,9 @@
 <template>
     <div class="container">
-        <header class="text-center">
-            <div v-if="deviceId && registrationId">
-                <router-link to="/messages" class="p-3">Messages</router-link>
-                &bull;
-                <router-link to="/friends" class="p-3">Friends</router-link>
-                &bull;
-                <router-link to="/account" class="p-3">Account</router-link>
-                <code class="ml-5">👽 {{ deviceId }}-{{ registrationId }}</code>
+        <header>
+            <div v-if="deviceId && registrationId" class="row m-0">
+                <div class="col-6 m-0 text-left"><router-link to="/friends">Friends</router-link></div>
+                <div class="col-6 m-0 text-right"><router-link to="/account" class="">{{ deviceId }}-{{ registrationId }}</router-link></div>
             </div>
             <div v-else>
                 <router-link to="/" class="p-3">Home</router-link>

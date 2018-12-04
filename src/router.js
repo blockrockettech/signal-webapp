@@ -27,7 +27,7 @@ export default new Router({
             component: Friends
         },
         {
-            path: '/messages',
+            path: '/messages/:id',
             name: 'messages',
             component: Messages
         }

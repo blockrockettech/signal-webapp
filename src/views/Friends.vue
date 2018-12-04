@@ -5,23 +5,32 @@
         <div class="row">
             <div v-if="friends && friends.length > 0" class="col">
                 <ul>
-                    <li v-for="friend in friends" v-bind:key="friend"><span class="badge badge-primary">{{ friend }}</span></li>
+                    <li v-for="friend in friends" v-bind:key="friend">
+                        <router-link :to="{ name: 'messages', params: { id: friend } }">
+                            <span class="badge badge-primary">{{ friend }}</span>
+                        </router-link>
+                        <router-link :to="{ name: 'messages', params: { id: friend } }" class="ml-3">Chat</router-link>
+                    </li>
                 </ul>
             </div>
         </div>
 
-        <div v-if="registrationId" class="fixed-bottom m-3">
-            <b-form @submit="onSubmit" v-if="show" inline>
-
-                <b-form-input id="id"
-                              type="text"
-                              v-model="form.id"
-                              required
-                              class="mb-2 mr-sm-2 mb-sm-0"
-                              placeholder="">
-                </b-form-input>
-
-                <b-button type="submit" variant="primary">Add Friend</b-button>
+        <div v-if="registrationId" class="fixed-bottom m-2">
+            <b-form @submit="onSubmit" v-if="show">
+                <div class="row m-0 p-0">
+                    <div class="col-11 m-0 p-0">
+                        <b-form-input id="id"
+                                      type="text"
+                                      v-model="form.id"
+                                      required
+                                      class="w-100"
+                                      placeholder="">
+                        </b-form-input>
+                    </div>
+                    <div class="col-1 m-0 p-0">
+                        <b-button type="submit" variant="primary" class="ml-2">Add</b-button>
+                    </div>
+                </div>
             </b-form>
         </div>
     </div>

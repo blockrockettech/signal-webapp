@@ -1,10 +1,9 @@
 <template>
     <div id="messages-page">
-        <h1>Messages</h1>
+        <h1>Chat with <span class="badge badge-primary">{{ $route.params.id }}</span></h1>
 
         <div v-if="messages && messages.length > 0" id="messages">
-            <div v-for="msg in orderBy(messages, '-timestamp')" :key="msg.timestamp" class="row">
-                <!--{{ msg }}-->
+            <div v-for="msg in orderBy(filteredMessages, '-timestamp')" :key="msg.timestamp" class="row">
                 <div class="col-sm-10">
                     <span v-bind:class="{'them': msg.deviceId !== deviceId}">
                         {{ msg.message }}
@@ -13,25 +12,27 @@
                     <!--<code>{{ msg.ciphertextMessage }}</code>-->
                 </div>
                 <div class="col-sm-2">
-                    <span class="badge badge-success" v-if="msg.deviceId !== deviceId">{{ msg.deviceId }}-{{ msg.registrationId }}</span>
+                    <span class="badge badge-primary" v-if="msg.deviceId !== deviceId">{{ msg.deviceId }}-{{ msg.registrationId }}</span>
                 </div>
             </div>
         </div>
 
-        <div v-if="registrationId" class="fixed-bottom m-3">
-            <b-form @submit="onSend" v-if="show" inline>
-
-                <b-form-select id="id" required v-model="form.id" :options="friends" class="mb-2 mr-sm-2 mb-sm-0"></b-form-select>
-
-                <b-form-input id="message"
-                              type="text"
-                              v-model="form.message"
-                              required
-                              class="mb-2 mr-sm-2 mb-sm-0"
-                              placeholder="Message">
-                </b-form-input>
-
-                <b-button type="submit" variant="primary">Send</b-button>
+        <div v-if="registrationId" class="fixed-bottom m-2">
+            <b-form @submit="onSend" v-if="show">
+                <div class="row m-0 p-0">
+                    <div class="col-11 m-0 p-0">
+                        <b-form-input id="message"
+                                      type="text"
+                                      v-model="form.message"
+                                      required
+                                      class="w-100"
+                                      placeholder="Message">
+                        </b-form-input>
+                    </div>
+                    <div class="col-1 m-0 p-0">
+                        <b-button type="submit" variant="primary" class="ml-2">Send</b-button>
+                    </div>
+                </div>
             </b-form>
         </div>
     </div>
@@ -46,7 +47,7 @@
         data () {
             return {
                 form: {
-                    id: '',
+                    id: this.$route.params.id,
                     message: ''
                 },
                 show: true
@@ -54,9 +55,16 @@
         },
         computed: {
             ...mapState([
-                'registrationId', 'deviceId', 'store', 'sent', 'messages', 'friends'
+                'registrationId', 'deviceId', 'messages',
             ]),
+            filteredMessages: function() {
+                if (!this.messages) return;
 
+                let that = this;
+                return this.messages.filter(function (msg) {
+                    return msg.deviceId === that.deviceId || msg.deviceId === parseInt(that.$route.params.id.split('-')[0]);
+                })
+            }
         },
         methods: {
             onSend (evt) {
@@ -65,7 +73,6 @@
                 this.$store.dispatch('send-message', this.form)
                     .then(() => {
                         this.form.message = '';
-                        this.form.id = this.friends ? this.friends[0] : null;
                     });
             }
         }
