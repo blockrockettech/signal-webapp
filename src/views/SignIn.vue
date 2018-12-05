@@ -42,6 +42,7 @@
                 this.disabled = true;
                 // alert(JSON.stringify(this.form));
                 this.$store.dispatch('generate-registration-id', this.form)
+                    .then(() => this.$store.dispatch('clear-messages'))
                     .then(() => this.$router.push('/account'))
                     .catch((ex) => {
                         console.log(ex);

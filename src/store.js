@@ -149,6 +149,9 @@ export default new Vuex.Store({
                 Vue.set(state, 'friends', state.friends.concat(friend));
             }
         },
+        ['clear-messages'] (state) {
+            Vue.set(state, 'messages', []);
+        }
     },
     actions: {
         // bootstraps a Signal device, registration, and keys
@@ -180,7 +183,7 @@ export default new Vuex.Store({
             // Every x seconds check if the main account has changed
             setInterval(() => {
                 dispatch('poll-message');
-            }, 3000);
+            }, 1000);
         },
         async ['send-keys-to-server'] ({commit, dispatch, state, rootState}, form) {
             try {
@@ -276,6 +279,9 @@ export default new Vuex.Store({
             } catch (ex) {
                 console.error(ex);
             }
+        },
+        async ['clear-messages'] ({commit, dispatch, state, rootState}) {
+            commit('clear-messages');
         },
         async ['poll-message'] ({commit, dispatch, state, rootState}) {
             try {

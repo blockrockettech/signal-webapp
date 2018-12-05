@@ -10,6 +10,7 @@
                             <span class="badge badge-primary">{{ friend }}</span>
                         </router-link>
                         <router-link :to="{ name: 'messages', params: { id: friend } }" class="ml-3">Chat</router-link>
+                        <span class="badge badge-secondary ml-3">{{ count(friend) }}</span>
                     </li>
                 </ul>
             </div>
@@ -52,15 +53,22 @@
         },
         computed: {
             ...mapState([
-                'registrationId', 'deviceId', 'store', 'friends'
-            ]),
-
+                'registrationId', 'deviceId', 'store', 'friends', 'messages'
+            ])
         },
         methods: {
             onSubmit (evt) {
                 evt.preventDefault();
                 // alert(JSON.stringify(this.form));
                 this.$store.dispatch('add-friend', this.form);
+            },
+            count (friendDeviceId) {
+                if (!this.messages) return;
+
+                return this.messages.filter(function (msg) {
+                    const destinationDeviceId =  parseInt(friendDeviceId.split('-')[0]);
+                    return msg.deviceId === destinationDeviceId;
+                }).length
             }
         }
     };

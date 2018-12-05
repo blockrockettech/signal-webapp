@@ -3,10 +3,14 @@
         <header>
             <div v-if="deviceId && registrationId" class="row m-0">
                 <div class="col-6 m-0 text-left"><router-link to="/friends">Friends</router-link></div>
-                <div class="col-6 m-0 text-right"><router-link to="/account" class="">{{ deviceId }}-{{ registrationId }}</router-link></div>
+                <div class="col-6 m-0 text-right">
+                    <router-link to="/account" class="">{{ deviceId }}-{{ registrationId }}</router-link>
+                    <router-link to="/" class="ml-3 small">Sign out</router-link>
+                </div>
+
             </div>
             <div v-else>
-                <router-link to="/" class="p-3">Home</router-link>
+                <router-link to="/" class="">Home</router-link>
             </div>
         </header>
         <main id="app">
