@@ -1,6 +1,6 @@
 <template>
     <div id="container" class="container">
-        <div class="row">
+        <div class="row" v-if="!restoring">
             <div class="col-sm-4 offset-sm-4 text-center">
                 <img src="../assets/odin-Hires-icon.png" style="height: 100px;" class="mb-5"/>
                 <b-form @submit="onSubmit">
@@ -14,6 +14,11 @@
 
                     <b-button type="submit" variant="primary" class="mt-3" :disabled="disabled">Sign in</b-button>
                 </b-form>
+            </div>
+        </div>
+        <div class="row mt-5" v-if="restoring">
+            <div class="col text-center">
+                <code>Restoring session...</code>
             </div>
         </div>
     </div>
@@ -30,7 +35,8 @@
                 form: {
                     deviceId: ''
                 },
-                disabled: false
+                disabled: false,
+                restoring: false,
             };
         },
         computed: {
@@ -51,8 +57,17 @@
         },
         mounted() {
             this.$nextTick(() => {
-                console.log(this.$ls.get('deviceId'));
-                console.log(this.$ls.get('registrationId'));
+                if (this.$ls.get('deviceId') && this.$ls.get('registrationId')) {
+                    console.log(`Restoring keys from local storage for device [${this.$ls.get('deviceId')}]`);
+                    this.restoring = true;
+
+                    this.$store.dispatch('restore-session', this.form)
+                        .then(() => this.$store.dispatch('clear-messages'))
+                        .then(() => this.$router.push('/account'))
+                        .catch((ex) => {
+                            console.log(ex);
+                        });
+                }
             });
         },
     };

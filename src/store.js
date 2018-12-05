@@ -111,7 +111,6 @@ export default new Vuex.Store({
         ['commit-account-registration'] (state, {deviceId, registrationId, identityKeyPair, preKey, signedPreKey}) {
 
             // build a new store on each account
-            // when server based this should only happen once
             state.store = new InMemorySignalProtocolStore();
 
             state.deviceId = parseInt(deviceId);
@@ -176,7 +175,39 @@ export default new Vuex.Store({
                 },
                 signature: arrayBufferToBase64(state.signedPreKey.signature)
             });
-        }
+        },
+        ['restore-session'] (state) {
+            // build a new store on each account
+            state.store = new InMemorySignalProtocolStore();
+
+            state.deviceId = Vue.ls.get('deviceId');
+            state.registrationId = Vue.ls.get('registrationId');
+
+            // needs to be in SignalProtocolStore
+            state.store.put('registrationId', state.registrationId);
+
+            state.identityKeyPair = Vue.ls.get('identityKeyPair');
+            state.identityKeyPair.pubKey = base64ToArrayBuffer(state.identityKeyPair.pubKey);
+            state.identityKeyPair.privKey = base64ToArrayBuffer(state.identityKeyPair.privKey);
+
+            // needs to be in SignalProtocolStore
+            state.store.put('identityKey', state.identityKeyPair);
+
+            state.preKey = Vue.ls.get('preKey');
+            state.preKey.keyPair.pubKey = base64ToArrayBuffer(state.preKey.keyPair.pubKey);
+            state.preKey.keyPair.privKey = base64ToArrayBuffer(state.preKey.keyPair.privKey);
+
+            // needs to be in SignalProtocolStore
+            state.store.storePreKey(state.preKey.keyId, state.preKey.keyPair);
+
+            state.signedPreKey = Vue.ls.get('signedPreKey');
+            state.signedPreKey.keyPair.pubKey = base64ToArrayBuffer(state.signedPreKey.keyPair.pubKey);
+            state.signedPreKey.keyPair.privKey = base64ToArrayBuffer(state.signedPreKey.keyPair.privKey);
+            state.signedPreKey.signature = base64ToArrayBuffer(state.signedPreKey.signature);
+
+            // needs to be in SignalProtocolStore
+            state.store.storeSignedPreKey(state.signedPreKey.keyId, state.signedPreKey.keyPair);
+        },
     },
     actions: {
         // bootstraps a Signal device, registration, and keys
@@ -211,7 +242,7 @@ export default new Vuex.Store({
             }, 1000);
 
             console.debug(`Polling for messages for device [${form.deviceId}] registration [${registrationId}]`);
-            
+
             // add to local storage so we can recreate a session...in theory
             commit('keys-to-local');
         },
@@ -307,6 +338,9 @@ export default new Vuex.Store({
         },
         async ['clear-messages'] ({commit, dispatch, state, rootState}) {
             commit('clear-messages');
+        },
+        async ['restore-session'] ({commit, dispatch, state, rootState}) {
+            commit('restore-session');
         },
         async ['poll-message'] ({commit, dispatch, state, rootState}) {
             try {
