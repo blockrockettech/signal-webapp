@@ -4,15 +4,17 @@
 
         <div v-if="messages && messages.length > 0" id="messages">
             <div v-for="msg in orderBy(filteredMessages, '-timestamp')" :key="msg.timestamp" class="row">
-                <div class="col-sm-10">
-                    <span v-bind:class="{'them': msg.deviceId !== deviceId}">
-                        {{ msg.message }}
-                        <span class="text-muted xs">{{ new Date(msg.timestamp).toLocaleTimeString() }}</span>
+                <div class="col-sm-12">
+                    <span v-bind:class="{'them': msg.deviceId !== deviceId}" class="">
+                        <span class="p-1 m-3 pl-3 pr-3" v-bind:class="{'speech-bubble-left': msg.deviceId !== deviceId, 'speech-bubble-right': msg.deviceId === deviceId}">
+                            {{ msg.message }}
+                        </span>
+                        <span class="text-muted xs">
+                            {{ new Date(msg.timestamp).toLocaleTimeString() }}
+                            <!--<code class="" v-if="msg.deviceId !== deviceId">{{ msg.deviceId }}-{{ msg.registrationId }}</code>-->
+                        </span>
                     </span>
                     <!--<code>{{ msg.ciphertextMessage }}</code>-->
-                </div>
-                <div class="col-sm-2">
-                    <span class="badge badge-primary" v-if="msg.deviceId !== deviceId">{{ msg.deviceId }}-{{ msg.registrationId }}</span>
                 </div>
             </div>
         </div>
@@ -57,14 +59,14 @@
             ...mapState([
                 'registrationId', 'deviceId', 'messages',
             ]),
-            filteredMessages: function() {
+            filteredMessages: function () {
                 if (!this.messages) return;
 
                 let that = this;
                 return this.messages.filter(function (msg) {
-                    const destinationDeviceId =  parseInt(that.$route.params.id.split('-')[0]);
+                    const destinationDeviceId = parseInt(that.$route.params.id.split('-')[0]);
                     return (msg.deviceId === that.deviceId && msg.destinationDeviceId === destinationDeviceId) || msg.deviceId === destinationDeviceId;
-                })
+                });
             }
         },
         methods: {
@@ -81,6 +83,9 @@
 </script>
 
 <style lang="scss">
+    $left: #BCED91;
+    $right: #D3D3D3;
+
     div {
         margin-bottom: 20px;
         margin-top: 20px;
@@ -107,8 +112,50 @@
         }
 
         .xs {
-            font-size: 0.5rem;
+            font-size: 0.6rem;
             margin-left: 5px;
+        }
+
+        .speech-bubble-left {
+            position: relative;
+            background: $left;
+            border-radius: .4em;
+        }
+
+        .speech-bubble-left:after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            width: 0;
+            height: 0;
+            border: 0.625em solid transparent;
+            border-left-color: $left;
+            border-right: 0;
+            border-bottom: 0;
+            margin-top: -0.312em;
+            margin-right: -0.625em;
+        }
+
+        .speech-bubble-right {
+            position: relative;
+            background: $right;
+            border-radius: .4em;
+        }
+
+        .speech-bubble-right:after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 0;
+            height: 0;
+            border: 0.625em solid transparent;
+            border-right-color: $right;
+            border-left: 0;
+            border-bottom: 0;
+            margin-top: -0.312em;
+            margin-left: -0.625em;
         }
     }
 </style>

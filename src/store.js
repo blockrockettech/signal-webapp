@@ -12,7 +12,8 @@ Vue.use(Vuex);
 const ls = window.libsignal;
 const KeyHelper = ls.KeyHelper;
 
-const API_URL = 'http://localhost:3000';
+let API_URL = (process.env.NODE_ENV === 'development') ? 'http://localhost:3000' : 'https://osmmessenger.ml';
+console.log(`Using API`, API_URL);
 
 const api = axios.create({
     baseURL: `${API_URL}/`,

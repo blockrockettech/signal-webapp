@@ -5,7 +5,7 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "start": "vue-cli-service serve",
-    "api": "nodemon ./api/server.js",
+    "hosted": "NODE_ENV=hosted vue-cli-service serve",
     "dev": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
@@ -14,10 +14,7 @@
   "dependencies": {
     "axios": "^0.18.0",
     "bootstrap-vue": "^2.0.0-rc.11",
-    "cors": "^2.8.5",
-    "express": "^4.16.4",
     "lowdash": "^1.2.0",
-    "nodemon": "^1.18.6",
     "vue": "^2.5.17",
     "vue-router": "^3.0.1",
     "vue2-filters": "^0.3.0",

@@ -1,5 +1,12 @@
 'use strict';
 
+
+/*
+*
+* FOR REFERENCE ONLY - WE NOW HAVE A SEPARATE REPO AND PROJECT FOR THE SERVER
+*
+ */
+
 // @author Akash Singh
 // BASED ON: https://github.com/akash4393/libsignal-javascript-example
 
