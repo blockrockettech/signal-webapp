@@ -48,7 +48,13 @@
                         console.log(ex);
                     });
             }
-        }
+        },
+        mounted() {
+            this.$nextTick(() => {
+                console.log(this.$ls.get('deviceId'));
+                console.log(this.$ls.get('registrationId'));
+            });
+        },
     };
 </script>
 

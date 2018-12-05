@@ -16,6 +16,7 @@
     "bootstrap-vue": "^2.0.0-rc.11",
     "lowdash": "^1.2.0",
     "vue": "^2.5.17",
+    "vue-ls": "^3.2.0",
     "vue-router": "^3.0.1",
     "vue2-filters": "^0.3.0",
     "vuex": "^3.0.1",

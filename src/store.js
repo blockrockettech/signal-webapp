@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import axios from 'axios';
-import createPersistedState from 'vuex-persistedstate'
+import createPersistedState from 'vuex-persistedstate';
 import { InMemorySignalProtocolStore } from './InMemorySignalProtocolStore';
 
 /* global dcodeIO */
@@ -152,12 +152,36 @@ export default new Vuex.Store({
         },
         ['clear-messages'] (state) {
             Vue.set(state, 'messages', []);
+        },
+        ['keys-to-local'] (state) {
+            // add to local storage
+            Vue.ls.set('deviceId', parseInt(state.deviceId));
+            Vue.ls.set('registrationId', parseInt(state.registrationId));
+            Vue.ls.set('identityKeyPair', {
+                pubKey: arrayBufferToBase64(state.identityKeyPair.pubKey),
+                privKey: arrayBufferToBase64(state.identityKeyPair.privKey),
+            });
+            Vue.ls.set('preKey', {
+                keyId: parseInt(state.preKey.keyId),
+                keyPair: {
+                    pubKey: arrayBufferToBase64(state.preKey.keyPair.pubKey),
+                    privKey: arrayBufferToBase64(state.preKey.keyPair.privKey),
+                }
+            });
+            Vue.ls.set('signedPreKey', {
+                keyId: parseInt(state.signedPreKey.keyId),
+                keyPair: {
+                    pubKey: arrayBufferToBase64(state.signedPreKey.keyPair.pubKey),
+                    privKey: arrayBufferToBase64(state.signedPreKey.keyPair.privKey),
+                },
+                signature: arrayBufferToBase64(state.signedPreKey.signature)
+            });
         }
     },
     actions: {
         // bootstraps a Signal device, registration, and keys
         async ['generate-registration-id'] ({commit, dispatch, state, rootState}, form) {
-            console.info(`Generating registration ID for ${JSON.stringify(form)}`);
+            console.info(`Generating registration ID for device [${form.deviceId}]`);
 
             const registrationId = KeyHelper.generateRegistrationId();
             // console.log(registrationId);
@@ -186,7 +210,10 @@ export default new Vuex.Store({
                 dispatch('poll-message');
             }, 1000);
 
-            console.debug(`Polling for messages for device [${form.id}] registration [${registrationId}]`);
+            console.debug(`Polling for messages for device [${form.deviceId}] registration [${registrationId}]`);
+            
+            // add to local storage so we can recreate a session...in theory
+            commit('keys-to-local');
         },
         async ['send-keys-to-server'] ({commit, dispatch, state, rootState}, form) {
             try {
@@ -236,7 +263,6 @@ export default new Vuex.Store({
                 keys.signedPreKey.publicKey = base64ToArrayBuffer(keys.signedPreKey.publicKey);
                 keys.signedPreKey.signature = base64ToArrayBuffer(keys.signedPreKey.signature);
                 keys.preKey.publicKey = base64ToArrayBuffer(keys.preKey.publicKey);
-
 
                 // add recipient to session
                 await sessionBuilder.processPreKey(keys);
@@ -299,6 +325,7 @@ export default new Vuex.Store({
                         const deviceId = message.value.deviceId;
 
                         console.info(`Received message from device [${deviceId}] registration [${registrationId}]`);
+                        console.info(`Message from device [${deviceId}] registration [${registrationId}]`, message);
 
                         let fromAddress = new ls.SignalProtocolAddress(registrationId, deviceId);
                         let sessionCipher = new ls.SessionCipher(state.store, fromAddress);
@@ -310,8 +337,7 @@ export default new Vuex.Store({
                             console.debug(`Cipher message type 3: decryptPreKeyWhisperMessage`);
                             plaintext = await sessionCipher.decryptPreKeyWhisperMessage(message.value.ciphertextMessage.body, 'binary');
                             commit('commit-friend', `${deviceId}-${registrationId}`);
-                        }
-                        else if (message.value.ciphertextMessage.type === 1) {
+                        } else if (message.value.ciphertextMessage.type === 1) {
                             console.debug(`Cipher message type 1: decryptWhisperMessage`);
                             plaintext = await sessionCipher.decryptWhisperMessage(message.value.ciphertextMessage.body, 'binary');
                         }
