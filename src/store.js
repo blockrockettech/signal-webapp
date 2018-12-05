@@ -157,19 +157,19 @@ export default new Vuex.Store({
     actions: {
         // bootstraps a Signal device, registration, and keys
         async ['generate-registration-id'] ({commit, dispatch, state, rootState}, form) {
-            console.log(`Generating Registration ID for ${JSON.stringify(form)}`);
+            console.info(`Generating registration ID for ${JSON.stringify(form)}`);
 
             const registrationId = KeyHelper.generateRegistrationId();
-            console.log(registrationId);
+            // console.log(registrationId);
 
             const identityKeyPair = await KeyHelper.generateIdentityKeyPair();
-            console.log(identityKeyPair);
+            // console.log(identityKeyPair);
 
             const preKey = await KeyHelper.generatePreKey(registrationId);
-            console.log(preKey);
+            // console.log(preKey);
 
             const signedPreKey = await KeyHelper.generateSignedPreKey(identityKeyPair, registrationId);
-            console.log(signedPreKey);
+            // console.log(signedPreKey);
 
             commit('commit-account-registration', {
                 ...form,
@@ -185,10 +185,12 @@ export default new Vuex.Store({
             setInterval(() => {
                 dispatch('poll-message');
             }, 1000);
+
+            console.debug(`Polling for messages for device [${form.id}] registration [${registrationId}]`);
         },
         async ['send-keys-to-server'] ({commit, dispatch, state, rootState}, form) {
             try {
-                console.log(`Sending keys`);
+                console.info(`Sending pre-keys for device [${state.deviceId}] registration [${state.registrationId}]`);
 
                 // NOTE: No private keys go to the server - not sure type is needed?
                 let reqObj = {
@@ -205,10 +207,9 @@ export default new Vuex.Store({
                         publicKey: arrayBufferToBase64(state.preKey.keyPair.pubKey)
                     }
                 };
-                console.log(reqObj);
 
                 const res = await api.put(`/keys`, reqObj);
-                console.log(`registered keys`, res);
+                console.debug(`Registered pre-keys`, res);
             } catch (ex) {
                 console.error(ex);
             }
@@ -216,7 +217,7 @@ export default new Vuex.Store({
         async ['add-friend'] ({commit, dispatch, state, rootState}, form) {
             try {
                 const [deviceId, registrationId] = form.id.split('-');
-                console.log(`Adding device [${deviceId}] registration [${registrationId}]`);
+                console.info(`Adding device [${deviceId}] registration [${registrationId}] to signal protocol store`);
 
                 const address = new ls.SignalProtocolAddress(registrationId, deviceId);
 
@@ -236,12 +237,11 @@ export default new Vuex.Store({
                 keys.signedPreKey.signature = base64ToArrayBuffer(keys.signedPreKey.signature);
                 keys.preKey.publicKey = base64ToArrayBuffer(keys.preKey.publicKey);
 
-                console.log(keys);
 
                 // add recipient to session
                 await sessionBuilder.processPreKey(keys);
 
-                console.log(`pre key processed`, keys);
+                console.debug(`Pre keys processed:`, keys);
 
                 commit('commit-friend', form.id);
             } catch (ex) {
@@ -251,15 +251,13 @@ export default new Vuex.Store({
         async ['send-message'] ({commit, dispatch, state, rootState}, form) {
             try {
                 const [deviceId, registrationId] = form.id.split('-');
-                console.log(`Sending "${form.message}" to device [${deviceId}] registration [${registrationId}]`);
+                console.info(`Sending "${form.message}" to device [${deviceId}] registration [${registrationId}]`);
 
                 const address = new ls.SignalProtocolAddress(registrationId, deviceId);
 
                 // encrypt
                 const sessionCipher = new ls.SessionCipher(state.store, address);
                 const ciphertext = await sessionCipher.encrypt(form.message);
-
-                console.log(ciphertext);
 
                 let msgObj = {
                     destinationDeviceId: parseInt(deviceId),
@@ -269,8 +267,8 @@ export default new Vuex.Store({
                     ciphertextMessage: ciphertext
                 };
 
-                const res = await api.put(`/messages`, msgObj);
-                console.log(`sent message cipher`, res);
+                await api.put(`/messages`, msgObj);
+                console.debug(`Sent encrypted message cipher:`, msgObj);
 
                 // add message into local store with unencrypted
                 msgObj.message = form.message;
@@ -286,40 +284,41 @@ export default new Vuex.Store({
         },
         async ['poll-message'] ({commit, dispatch, state, rootState}) {
             try {
-                console.log(`/messages?deviceId=${state.deviceId}&registrationId=${state.registrationId}`);
+                // console.log(`/messages?deviceId=${state.deviceId}&registrationId=${state.registrationId}`); // too noisy
 
                 const encryptedMessageData = await api.get(`/messages?deviceId=${state.deviceId}&registrationId=${state.registrationId}`);
 
                 if (encryptedMessageData.status === 200) {
                     const encryptedMessage = encryptedMessageData.data;
-                    console.log(encryptedMessage);
 
                     if (encryptedMessage && encryptedMessage.length > 0) {
+                        // FIXME only processing one message at a time!
                         const message = encryptedMessage[0];
 
                         const registrationId = message.value.registrationId;
                         const deviceId = message.value.deviceId;
 
-                        console.log(`Received from device [${deviceId}] registraion [${registrationId}]`);
+                        console.info(`Received message from device [${deviceId}] registration [${registrationId}]`);
 
                         let fromAddress = new ls.SignalProtocolAddress(registrationId, deviceId);
                         let sessionCipher = new ls.SessionCipher(state.store, fromAddress);
 
+                        console.debug(`Encrypted message:`, message.value.ciphertextMessage.body);
+
                         let plaintext;
                         if (message.value.ciphertextMessage.type === 3) {
-                            console.log(`TYPE 3: decryptPreKeyWhisperMessage`);
+                            console.debug(`Cipher message type 3: decryptPreKeyWhisperMessage`);
                             plaintext = await sessionCipher.decryptPreKeyWhisperMessage(message.value.ciphertextMessage.body, 'binary');
                             commit('commit-friend', `${deviceId}-${registrationId}`);
                         }
                         else if (message.value.ciphertextMessage.type === 1) {
-                            console.log(`TYPE 1: decryptWhisperMessage`);
+                            console.debug(`Cipher message type 1: decryptWhisperMessage`);
                             plaintext = await sessionCipher.decryptWhisperMessage(message.value.ciphertextMessage.body, 'binary');
                         }
 
-                        console.log(plaintext);
                         let decryptedMessage = util.toString(plaintext);
 
-                        console.log(decryptedMessage);
+                        console.debug(`Decrypted message:`, decryptedMessage);
 
                         commit('commit-message', {
                             ...message.value,
@@ -328,6 +327,7 @@ export default new Vuex.Store({
 
                         // delete message on receipt
                         await api.delete(`/messages?key=${message.key}`);
+                        console.debug(`Read receipt sent for key:`, message.key);
                     }
                 }
             } catch (ex) {
