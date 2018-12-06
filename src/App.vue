@@ -5,7 +5,6 @@
                 <div class="col-6 m-0 text-left"><router-link to="/friends">Friends</router-link></div>
                 <div class="col-6 m-0 text-right">
                     <router-link to="/account" class="">{{ deviceId }}-{{ registrationId }}</router-link>
-                    <router-link to="/" class="ml-3 small">Sign out</router-link>
                 </div>
 
             </div>

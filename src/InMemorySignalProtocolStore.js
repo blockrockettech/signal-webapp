@@ -70,7 +70,6 @@ SignalProtocolStore.prototype = {
         } else {
             return Promise.resolve(false);
         }
-
     },
 
     /* Returns a prekeypair object or undefined */
