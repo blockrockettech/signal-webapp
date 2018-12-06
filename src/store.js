@@ -250,7 +250,7 @@ export default new Vuex.Store({
             // needs to be in SignalProtocolStore
             state.store.storeSignedPreKey(state.signedPreKey.keyId, state.signedPreKey.keyPair);
 
-            // messages
+            // messages - ideally this should be somewhere else...
             state.messages = Vue.ls.get('messages');
         }
     },
