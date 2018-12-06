@@ -114,7 +114,6 @@ export default new Vuex.Store({
         deviceId: null,
         registrationId: null,
         identityKeyPair: null,
-        preKey: null,
         signedPreKey: null,
 
         // needs to be a SignalProtocolStore impl
@@ -158,12 +157,16 @@ export default new Vuex.Store({
         },
         ['commit-message'] (state, messageObj) {
             Vue.set(state, 'messages', state.messages.concat(messageObj));
+
+            Vue.ls.set('messages', state.messages);
         },
         ['commit-sent-message'] (state, messageObj) {
             let stringifyObj = messageObj;
             stringifyObj.ciphertextMessage = JSON.stringify(messageObj.ciphertextMessage);
 
             Vue.set(state, 'messages', state.messages.concat(stringifyObj));
+
+            Vue.ls.set('messages', state.messages);
         },
         ['commit-friend'] (state, friend) {
             // add if not existing
@@ -175,6 +178,8 @@ export default new Vuex.Store({
         },
         ['clear-messages'] (state) {
             Vue.set(state, 'messages', []);
+
+            Vue.ls.set('messages', []);
         },
         ['keys-to-local'] (state) {
             // add to local storage
@@ -244,6 +249,9 @@ export default new Vuex.Store({
 
             // needs to be in SignalProtocolStore
             state.store.storeSignedPreKey(state.signedPreKey.keyId, state.signedPreKey.keyPair);
+
+            // messages
+            state.messages = Vue.ls.get('messages');
         }
     },
     actions: {
