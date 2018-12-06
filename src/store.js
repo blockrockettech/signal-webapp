@@ -1,8 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import axios from 'axios';
-import createPersistedState from 'vuex-persistedstate';
-import {InMemorySignalProtocolStore} from './InMemorySignalProtocolStore';
+import { InMemorySignalProtocolStore } from './InMemorySignalProtocolStore';
 
 /* global dcodeIO */
 
@@ -88,7 +87,7 @@ const util = (function () {
 const DEFAULT_NUMBER_OF_PRE_KEYS = 50;
 
 // Generate multiple PreKeys (as per documentation)
-async function generatePreKeys(registrationId) {
+async function generatePreKeys (registrationId) {
     let listOfPreKeysPromise = [];
     for (let i = 0; i < DEFAULT_NUMBER_OF_PRE_KEYS; i++) {
         listOfPreKeysPromise.push(KeyHelper.generatePreKey(registrationId + i + 1));
@@ -110,18 +109,11 @@ async function generatePreKeys(registrationId) {
 }
 
 export default new Vuex.Store({
-    // plugins: [createPersistedState({
-    //     reducer: state => ({
-    //         deviceId: state.deviceId,
-    //         registrationId: state.registrationId,
-    //     }),
-    // })],
     state: {
         // local session vars
         deviceId: null,
         registrationId: null,
         identityKeyPair: null,
-        preKey: null,
         signedPreKey: null,
 
         // needs to be a SignalProtocolStore impl
@@ -132,7 +124,7 @@ export default new Vuex.Store({
         friends: [],
     },
     mutations: {
-        ['commit-account-registration'](state, {deviceId, registrationId, identityKeyPair, preKeys, signedPreKey}) {
+        ['commit-account-registration'] (state, {deviceId, registrationId, identityKeyPair, preKeys, signedPreKey}) {
 
             // build a new store on each account
             // when server based this should only happen once
@@ -163,25 +155,33 @@ export default new Vuex.Store({
             // needs to be in SignalProtocolStore
             state.store.storeSignedPreKey(signedPreKey.keyId, signedPreKey.keyPair);
         },
-        ['commit-message'](state, messageObj) {
+        ['commit-message'] (state, messageObj) {
             Vue.set(state, 'messages', state.messages.concat(messageObj));
+
+            Vue.ls.set('messages', state.messages);
         },
-        ['commit-sent-message'](state, messageObj) {
+        ['commit-sent-message'] (state, messageObj) {
             let stringifyObj = messageObj;
             stringifyObj.ciphertextMessage = JSON.stringify(messageObj.ciphertextMessage);
 
             Vue.set(state, 'messages', state.messages.concat(stringifyObj));
+
+            Vue.ls.set('messages', state.messages);
         },
-        ['commit-friend'](state, friend) {
+        ['commit-friend'] (state, friend) {
             // add if not existing
             if (state.friends.indexOf(friend) === -1) {
                 Vue.set(state, 'friends', state.friends.concat(friend));
+
+                Vue.ls.set('friends', state.friends);
             }
         },
-        ['clear-messages'](state) {
+        ['clear-messages'] (state) {
             Vue.set(state, 'messages', []);
+
+            Vue.ls.set('messages', []);
         },
-        ['keys-to-local'](state) {
+        ['keys-to-local'] (state) {
             // add to local storage
             Vue.ls.set('deviceId', parseInt(state.deviceId));
             Vue.ls.set('registrationId', parseInt(state.registrationId));
@@ -209,7 +209,7 @@ export default new Vuex.Store({
                 signature: arrayBufferToBase64(state.signedPreKey.signature)
             });
         },
-        ['restore-session'](state) {
+        ['restore-session'] (state) {
             // build a new store on each account
             state.store = new InMemorySignalProtocolStore();
 
@@ -249,11 +249,14 @@ export default new Vuex.Store({
 
             // needs to be in SignalProtocolStore
             state.store.storeSignedPreKey(state.signedPreKey.keyId, state.signedPreKey.keyPair);
-        },
+
+            // messages - ideally this should be somewhere else...
+            state.messages = Vue.ls.get('messages');
+        }
     },
     actions: {
         // bootstraps a Signal device, registration, and keys
-        async ['generate-registration-id']({commit, dispatch, state, rootState}, form) {
+        async ['generate-registration-id'] ({commit, dispatch, state, rootState}, form) {
             console.info(`Generating registration ID for device [${form.deviceId}]`);
 
             const registrationId = KeyHelper.generateRegistrationId();
@@ -288,7 +291,7 @@ export default new Vuex.Store({
             // add to local storage so we can recreate a session...in theory
             commit('keys-to-local');
         },
-        async ['send-keys-to-server']({commit, dispatch, state, rootState}) {
+        async ['send-keys-to-server'] ({commit, dispatch, state, rootState}) {
             try {
                 console.info(`Sending pre-keys for device [${state.deviceId}] registration [${state.registrationId}]`);
 
@@ -318,7 +321,7 @@ export default new Vuex.Store({
                 console.error(ex);
             }
         },
-        async ['add-friend']({commit, dispatch, state, rootState}, form) {
+        async ['add-friend'] ({commit, dispatch, state, rootState}, form) {
             try {
                 const [deviceId, registrationId] = form.id.split('-');
                 console.info(`Adding device [${deviceId}] registration [${registrationId}] to signal protocol store`);
@@ -351,7 +354,7 @@ export default new Vuex.Store({
                 console.error(ex);
             }
         },
-        async ['send-message']({commit, dispatch, state, rootState}, form) {
+        async ['send-message'] ({commit, dispatch, state, rootState}, form) {
             try {
                 const [deviceId, registrationId] = form.id.split('-');
                 console.info(`Sending "${form.message}" to device [${deviceId}] registration [${registrationId}]`);
@@ -382,13 +385,24 @@ export default new Vuex.Store({
                 console.error(ex);
             }
         },
-        async ['clear-messages']({commit, dispatch, state, rootState}) {
+        async ['clear-messages'] ({commit, dispatch, state, rootState}) {
             commit('clear-messages');
         },
-        async ['restore-session']({commit, dispatch, state, rootState}) {
+        async ['restore-session'] ({commit, dispatch, state, rootState}) {
             commit('restore-session');
+
+            // re-add friends
+            const friends = Vue.ls.get('friends');
+            if (friends && friends.length > 0) {
+                friends.forEach((f) => dispatch('add-friend', {id: f}));
+            }
+
+            // Every x seconds check if the main account has changed
+            setInterval(() => {
+                dispatch('poll-message');
+            }, 1000);
         },
-        async ['poll-message']({commit, dispatch, state, rootState}) {
+        async ['poll-message'] ({commit, dispatch, state, rootState}) {
             try {
                 // console.log(`/messages?deviceId=${state.deviceId}&registrationId=${state.registrationId}`); // too noisy
 

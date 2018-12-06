@@ -25,7 +25,7 @@
                                       v-model="form.id"
                                       required
                                       class="w-100"
-                                      placeholder="">
+                                      placeholder="XXX-XXX">
                         </b-form-input>
                     </div>
                     <div class="col-1 m-0 p-0">

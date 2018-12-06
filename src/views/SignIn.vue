@@ -62,7 +62,6 @@
                     this.restoring = true;
 
                     this.$store.dispatch('restore-session', this.form)
-                        .then(() => this.$store.dispatch('clear-messages'))
                         .then(() => this.$router.push('/account'))
                         .catch((ex) => {
                             console.log(ex);
