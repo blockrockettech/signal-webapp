@@ -23,4 +23,4 @@ yarn-error.log*
 hello-libsignal-protocol-javascript.iml
 .idea
 .env
-
+.firebase/
