@@ -1,4 +1,4 @@
-# signal-odin
+# signal-webapp
 
 ## Project setup
 ```
@@ -25,3 +25,8 @@ npm run api
 * Send message to `XXX|456` on browser 1
 * Send message to `XXX|123` on browser 2
 * _repeat messaging steps to communicate_
+
+
+## API
+
+* See: https://github.com/blockrockettech/signal-api
